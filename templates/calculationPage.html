@@ -1,0 +1,35 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab1 - {{ .order.Title }}</title>
+    <link rel="stylesheet" href="/static/styles/calculationPage_style.css">
+</head>
+<body>
+    <header>
+        <div class="page-title">Информация о звезде и поля для ввода данных</div>
+
+        <div class="header-buttons">
+            <div class="home-button-container">
+                <a href="/hello"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+            </div>
+
+            <div class="cart-button-container">
+                <a href="/cart">
+                    <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
+                    <span class="cart-count">{{ .cartCount }}</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="order-container">
+        <h1>Информация о Звезде №{{ .order.ID }}</h1>
+        <img src="{{ .order.ImageURL }}" alt="{{ .order.Title }}" class="order-image">
+        <h2>Название: {{ .order.Title }}</h2>
+        <p class="description"><strong>Описание:</strong> {{ .order.Description }}</p>
+        <p class="price"><strong>Цена:</strong> {{ .order.Price }} ₽</p>
+        <a href="/add-to-cart/{{ .order.ID }}" class="add-to-cart-button">Добавить в корзину</a>
+        <a href="/hello" class="back-button">← Назад к списку</a>
+    </div>
+</body>
+</html>

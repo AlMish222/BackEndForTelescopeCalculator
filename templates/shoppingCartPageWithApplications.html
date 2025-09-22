@@ -1,0 +1,79 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина заказов</title>
+    <link rel="stylesheet" href="/static/styles/shoppingCartPageWithApplications_style.css">
+</head>
+<body>
+<header>
+    <div class="page-title">Список заявок для расчёта</div>
+</header>
+
+<div class="page-controls">
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="query" placeholder="Введите название звезды..." class="search-input">
+        <button type="submit" class="search-button">Найти</button>
+    </form>
+
+    <div class="city-select-container">
+        <select id="city-select" name="city" class="city-select">
+            <option value="">Выберите город наблюдения</option>
+            <option value="moscow">Москва</option>
+            <option value="saint_petersburg">Санкт-Петербург</option>
+            <option value="novosibirsk">Новосибирск</option>
+            <option value="yekaterinburg">Екатеринбург</option>
+            <option value="kazan">Казань</option>
+        </select>
+    </div>
+</div>
+
+<div class="cart-container">
+    <h1>Ваша корзина</h1>
+
+    {{ if .cart.Orders }}
+    <div class="cart-items">
+        {{ range .cart.Orders }}
+
+        <div class="cart-item">
+            <div class="item-image-container">
+                <div class="item-image-background"></div>
+                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="item-image"
+                     onerror="this.src='/static/img/default-order.png'">
+                {{ if gt .Quantity 1 }}
+                <div class="item-count">{{ .Quantity }}</div>
+                {{ end }}
+            </div>
+
+            <div class="item-info">
+                <h3 class="item-title">{{ .Title }}</h3>
+                <p class="item-description">{{ .ShortDescription }}</p>
+                <p class="item-price">{{ .Price }} ₽</p>
+                <p>Результат вычислений: {{ .Result }}</p>
+
+                <div class="item-actions">
+                    <a href="/order/{{.ID}}" class="details-button">Подробнее</a>
+                    <button class="remove-button">Удалить из корзины</button>
+                </div>
+            </div>
+        </div>
+        {{ end }}
+    </div>
+    {{ else }}
+    <div class="empty-cart">
+        <p>Корзина пуста</p>
+        <a href="/hello" class="back-button">Вернуться к выбору</a>
+    </div>
+    {{ end }}
+</div>
+
+<a href="/hello" class="home-button-bottom"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+
+<div class="cart-footer-left">
+    <div class="footer-buttons">
+        <button class="footer-button clear-basket">Очистить корзину</button>
+        <button class="footer-button save-basket">Сохранить заказ</button>
+        <button class="footer-button checkout">Оформить заказ</button>
+    </div>
+</div>
+</body>
+</html>
