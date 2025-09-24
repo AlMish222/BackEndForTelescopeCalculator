@@ -37,11 +37,7 @@
         <div class="cart-item">
             <div class="item-image-container">
                 <div class="item-image-background"></div>
-                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="item-image"
-                     onerror="this.src='/static/img/default-order.png'">
-                {{ if gt .Quantity 1 }}
-                <div class="item-count">{{ .Quantity }}</div>
-                {{ end }}
+                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="item-image">
             </div>
 
             <div class="item-info">
@@ -53,6 +49,14 @@
                 <div class="item-actions">
                     <a href="/order/{{.ID}}" class="details-button">Подробнее</a>
                     <button class="remove-button">Удалить из корзины</button>
+
+                    {{ if gt .Quantity 1 }}
+                    <div class="quantity-controls">
+                        <button class="decrease-button">-</button>
+                        <span class="item-count">{{ .Quantity }}</span>
+                        <button class="increase-button">+</button>
+                    </div>
+                    {{ end }}
                 </div>
             </div>
         </div>

@@ -179,8 +179,8 @@ body {
 
 .coordinates-container {
     position: absolute;
-    top: 60px;   /* отступ сверху от границы карточки */
-    right: 30px; /* отступ справа */
+    top: 60px;
+    right: 30px;
     display: flex;
     flex-direction: column;
     gap: 15px;
