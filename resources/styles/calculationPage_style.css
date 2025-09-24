@@ -40,16 +40,18 @@ header img {
 
 h1 {
     color: #333;
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: left;
 }
 
 h2 {
     color: #333;
     font-size: 20px;
-    text-align: center;
+    text-align: left;
     margin-bottom: 15px;
+    margin-left: 20px;
 }
 
 body {
@@ -63,13 +65,13 @@ body {
 }
 
 .order-container {
+    position: relative;
     max-width: 800px;
     margin: 20px auto;
     padding: 30px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 15px;
     backdrop-filter: blur(5px);
-    text-align: center;
 }
 
 .order-image {
@@ -77,7 +79,7 @@ body {
     height: 300px;
     border-radius: 150px;
     object-fit: cover;
-    margin: 20px auto;
+    margin: 20px 0;
     display: block;
 }
 
@@ -86,7 +88,7 @@ body {
     color: #888;
     margin: 15px 0;
     line-height: 1.5;
-    text-align: center;
+    text-align: left;
 }
 
 .price {
@@ -97,21 +99,38 @@ body {
     text-align: center;
 }
 
-.back-button {
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.back-button,
+.add-to-cart-button {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #B09898;
     color: white;
     text-decoration: none;
     border-radius: 25px;
-    margin-top: 20px;
+    font-weight: 500;
     transition: background-color 0.3s;
     font-family: 'Noto Serif', serif;
 }
 
+.back-button {
+    background-color: #B09898;
+}
+
 .back-button:hover {
     background-color: #8B7B7B;
-    color: white;
+}
+
+.add-to-cart-button {
+    background-color: #4507FF;
+}
+
+.add-to-cart-button:hover {
+    background-color: #0056b3;
 }
 
 .page-title {
@@ -157,3 +176,24 @@ body {
     justify-content: center;
     line-height: 1;
 }
+
+.coordinates-container {
+    position: absolute;
+    top: 60px;   /* отступ сверху от границы карточки */
+    right: 30px; /* отступ справа */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.coordinate-block {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 2px solid #B09898;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: 'Noto Serif', serif;
+    font-size: 14px;
+    color: #333;
+    min-width: 200px;
+}
+

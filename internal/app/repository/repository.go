@@ -12,7 +12,7 @@ func NewRepository() (*Repository, error) {
 	return &Repository{}, nil
 }
 
-type Order struct {
+type Order struct { //Star
 	ID               int
 	ServiceID        int
 	ImageURL         string
@@ -22,6 +22,8 @@ type Order struct {
 	Price            float64
 	Result           string
 	Quantity         int
+	Coord1           string
+	Coord2           string
 }
 
 type Cart struct {
@@ -53,6 +55,8 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" примерно 230 млн лет (оценки варьируются от 200 до 300 млн лет)",
 			Price:  150,
 			Result: "42.5",
+			Coord1: "RA: 06h 45m 09s",
+			Coord2: "Dec: -16° 42′ 58″",
 		},
 		{
 			ID:               2,
@@ -72,6 +76,8 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" спектральному типу F и обычно имеют белый или бело-жёлтый цвет.",
 			Price:  1501,
 			Result: "36.7",
+			Coord1: "RA: 02h 31m 48?70s",  // Прямое восхождение
+			Coord2: "Dec: +89° 15′ 51,00", // Склонение
 		},
 		{
 			ID:               3,
@@ -92,6 +98,8 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" произведя мощнейший гамма-всплеск.",
 			Price:  1502,
 			Result: "40.5",
+			Coord1: "RA: 06h 45m 09s",
+			Coord2: "Dec: -16° 42′ 58″",
 		},
 		{
 			ID:               4,
@@ -112,6 +120,8 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" Млечным путём.",
 			Price:  1503,
 			Result: "10.5",
+			Coord1: "RA: 06h 45m 09s",
+			Coord2: "Dec: -16° 42′ 58″",
 		},
 	}
 

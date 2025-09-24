@@ -26,10 +26,25 @@
         <h1>Информация о Звезде №{{ .order.ID }}</h1>
         <img src="{{ .order.ImageURL }}" alt="{{ .order.Title }}" class="order-image">
         <h2>Название: {{ .order.Title }}</h2>
+
+        <div class="coordinates-container">
+            <div class="coordinate-block">
+                <span>Координата 1: {{ .order.Coord1 }}</span>
+            </div>
+            <div class="coordinate-block">
+                <span>Координата 2: {{ .order.Coord2 }}</span>
+            </div>
+        </div>
+
         <p class="description"><strong>Описание:</strong> {{ .order.Description }}</p>
         <p class="price"><strong>Цена:</strong> {{ .order.Price }} ₽</p>
-        <a href="/add-to-cart/{{ .order.ID }}" class="add-to-cart-button">Добавить в корзину</a>
-        <a href="/hello" class="back-button">← Назад к списку</a>
+
+        <div class="buttons-container">
+            <a href="/hello" class="back-button">← Назад к списку</a>
+            <a class="add-to-cart-button">Добавить в корзину</a>
+        </div>
     </div>
 </body>
 </html>
+
+
