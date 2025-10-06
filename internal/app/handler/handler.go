@@ -81,6 +81,25 @@ func (h *Handler) GetCart(c *gin.Context) {
 	})
 }
 
+func (h *Handler) GetCartByID(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.String(400, "Неверный ID корзины")
+		return
+	}
+
+	cart, err := h.Repository.GetCartByID(id)
+	if err != nil {
+		c.String(404, "Корзина не найдена")
+		return
+	}
+
+	c.HTML(200, "cart.html", gin.H{
+		"cart": cart,
+	})
+}
+
 //func (h *Handler) AddToCart(ctx *gin.Context) {
 //	idStr := ctx.Param("id")
 //	id, err := strconv.Atoi(idStr)

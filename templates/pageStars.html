@@ -9,45 +9,46 @@
 <body>
 <div class="space">
 
-    <div class="page-title">Расчёт углов наведения стационарного телескопа</div>
+    <header>
+        <div class="page-title">Расчёт углов наведения стационарного телескопа</div>
+        <div class="home-button-container">
+            <a href="/hello"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+        </div>
+    </header>
 
-    <form action="/hello" method="GET" class="search-form-stars">
-        <input type="text" name="query" placeholder="Введите запрос" value="{{ .query }}">
-        <button type="submit">Найти</button>
-    </form>
+    <div class="search-and-cart">
+        <form action="/hello" method="GET" class="search-form-stars">
+            <input type="text" name="query" placeholder="Введите запрос" value="{{ .query }}" class="search-input-top">
+            <button type="submit" class="search-button-top">Найти</button>
+        </form>
 
-    <div class="main-content">
-        <div class="side-buttons">
-            <div class="home-button-container">
-                <a href="/hello"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
-            </div>
-            <div class="cart-button-container">
-                <a href="/cart">
+        <div class="cart-wrapper">
+            <a href="/cart/1" class="cart-button-link">
+                <div class="cart-button-container">
                     <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
                     <span class="cart-count">{{ .cartCount }}</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="container">
-            {{ range .orders }}
-            <div class="card">
-                <div class="image-container">
-                    <div class="image-background"></div>
-                    <img src="{{ .ImageURL }}" class="image" alt="{{ .Title }}"
-                         onerror="this.src='/static/img/default-order.png'">
                 </div>
-                <p class="title">{{ .Title }}</p>
-                <p class="short-description">{{ .ShortDescription }}</p>
-                <div class="down">
-                    <p>{{ .Price }} ₽</p>
-                    <a href="/order/{{ .ID }}" class="card-button">Подробнее</a>
-                </div>
-            </div>
-            {{ end }}
+            </a>
         </div>
     </div>
 
+
+
+    <div class="container">
+        {{ range .orders }}
+        <div class="card">
+            <div class="image-container">
+                <div class="image-background"></div>
+                <img src="{{ .ImageURL }}" class="image" alt="{{ .Title }}">
+            </div>
+            <p class="title">{{ .Title }}</p>
+            <p class="short-description">{{ .ShortDescription }}</p>
+            <div class="down">
+                <a href="/order/{{ .ID }}" class="card-button">Подробнее</a>
+            </div>
+        </div>
+        {{ end }}
+    </div>
 </div>
 </body>
 </html>

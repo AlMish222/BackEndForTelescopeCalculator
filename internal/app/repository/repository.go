@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"strings"
+	_ "time"
 )
 
 type Repository struct {
@@ -22,8 +23,11 @@ type Order struct { //Star
 	Price            float64
 	Result           string
 	Quantity         int
-	Coord1           string
-	Coord2           string
+	CoordStar1       string
+	CoordStar2       string
+	ObservationDate  string
+	ObserverLat      string
+	ObserverLong     string
 }
 
 type Cart struct {
@@ -53,10 +57,10 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" быть очень ясным, наблюдатель должен находиться на большой высоте, звезда должна проходить прямо над" +
 				" ним, а Солнце — близко к горизонту. Возраст системы Сириуса, по современным исследованиям, составляет" +
 				" примерно 230 млн лет (оценки варьируются от 200 до 300 млн лет)",
-			Price:  150,
-			Result: "42.5",
-			Coord1: "RA: 06h 45m 09s",
-			Coord2: "Dec: -16° 42′ 58″",
+			Price:      150,
+			Result:     "42.5",
+			CoordStar1: "RA: 06h 45m 09s",
+			CoordStar2: "Dec: -16° 42′ 58″",
 		},
 		{
 			ID:               2,
@@ -74,10 +78,10 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" превосходящий Солнце по яркости в 2000 раз и по массе в 6,4–6,7 раза. \nПолярная звезда — тройная звёздная" +
 				" система, в которую входят Полярная A, Полярная Ab и Полярная B. Все три звезды относятся к" +
 				" спектральному типу F и обычно имеют белый или бело-жёлтый цвет.",
-			Price:  1501,
-			Result: "36.7",
-			Coord1: "RA: 02h 31m 48?70s",  // Прямое восхождение
-			Coord2: "Dec: +89° 15′ 51,00", // Склонение
+			Price:      1501,
+			Result:     "36.7",
+			CoordStar1: "RA: 02h 31m 48?70s",  // Прямое восхождение
+			CoordStar2: "Dec: +89° 15′ 51,00", // Склонение
 		},
 		{
 			ID:               3,
@@ -96,10 +100,10 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" широты. Астрономы считают, что в конце своей жизни Эта Киля превратится в сверхновую, временно увеличив" +
 				" свою яркость в несколько раз и выбросив в космическое пространство огромное количество вещества и" +
 				" произведя мощнейший гамма-всплеск.",
-			Price:  1502,
-			Result: "40.5",
-			Coord1: "RA: 06h 45m 09s",
-			Coord2: "Dec: -16° 42′ 58″",
+			Price:      1502,
+			Result:     "40.5",
+			CoordStar1: "RA: 06h 45m 09s",
+			CoordStar2: "Dec: -16° 42′ 58″",
 		},
 		{
 			ID:               4,
@@ -118,10 +122,10 @@ func (r *Repository) GetOrders() ([]Order, error) {
 				" галактике Млечный Путь.\nПроисхождение: Арктур относится к разряду оранжевых гигантов спектрального" +
 				" класса К, учёные считают, что он сформировался в другой галактике, которая впоследствии была поглощена" +
 				" Млечным путём.",
-			Price:  1503,
-			Result: "10.5",
-			Coord1: "RA: 06h 45m 09s",
-			Coord2: "Dec: -16° 42′ 58″",
+			Price:      1503,
+			Result:     "10.5",
+			CoordStar1: "RA: 06h 45m 09s",
+			CoordStar2: "Dec: -16° 42′ 58″",
 		},
 	}
 
@@ -189,11 +193,36 @@ func (c *Cart) TotalQuantity() int {
 	return total
 }
 
+func (r *Repository) GetCartByID(id int) (Cart, error) {
+	if cart.ID == id {
+		return cart, nil
+	}
+	return Cart{}, fmt.Errorf("корзина не найдена")
+}
+
 func init() {
 	orders, _ := (&Repository{}).GetOrders()
 
+	orders[0].ObservationDate = "01.10.2025, 16:55"
+	orders[0].ObserverLat = "55.751244" // Москва
+	orders[0].ObserverLong = "37.618423"
 	addToCart(orders[0])
+
+	orders[1].ObservationDate = "02.10.2025, 17:55"
+	orders[1].ObserverLat = "59.934280" // Санкт-Петербург
+	orders[1].ObserverLong = "30.335099"
 	addToCart(orders[1])
+
+	orders[1].ObservationDate = "03.10.2025, 17:55"
+	orders[1].ObserverLat = "51.507351" // Лондон
+	orders[1].ObserverLong = "-0.127758"
 	addToCart(orders[1])
+
+	orders[2].ObservationDate = "04.10.2025, 20:20"
+	orders[2].ObserverLat = "40.712776" // Нью-Йорк
+	orders[2].ObserverLong = "-74.005974"
 	addToCart(orders[2])
 }
+
+//доделать ф-ию, что если за одной звездой наблюдение в разное время, то нужно,
+//чтобы карточки шли отдельно, а не сходились

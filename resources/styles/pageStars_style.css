@@ -14,15 +14,32 @@ body {
 }
 
 .space {
-    width: 95%;
+    width: 90%;
     margin-left: auto;
     margin-right: auto;
-    padding-top: 40px;
+    padding-right: 20px;
+    padding-top: 200px;
+}
+
+header {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.search-and-cart {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    gap: 20px;
 }
 
 /* Заголовок */
 .page-title {
-    width: 60%;
+    width: 100%;
     margin: 20px 0;
     padding: 10px 15px;
     background: rgba(0, 0, 0, 0.6);
@@ -74,7 +91,7 @@ body {
     background-color: #8B7B7B;
 }
 
-/* Основное содержимое: кнопки + карточки */
+
 .main-content {
     display: flex;
     gap: 30px;
@@ -98,8 +115,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-button-container img,
+.cart-button-container img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
 }
 
 .home-button-container:hover,
@@ -112,10 +137,6 @@ body {
     width: 45px;
     height: 45px;
     cursor: pointer;
-}
-
-.cart-button-container {
-    position: relative;
 }
 
 .cart-count {
@@ -243,3 +264,16 @@ body {
     color: white;
     text-decoration: none;
 }
+
+.cart-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+
+
+
+
+
+
+

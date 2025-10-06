@@ -14,7 +14,7 @@
             </div>
 
             <div class="cart-button-container">
-                <a href="/cart">
+                <a href="/cart/1">
                     <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
                     <span class="cart-count">{{ .cartCount }}</span>
                 </a>
@@ -27,17 +27,17 @@
         <img src="{{ .order.ImageURL }}" alt="{{ .order.Title }}" class="order-image">
         <h2>Название: {{ .order.Title }}</h2>
 
-        <div class="coordinates-container">
-            <div class="coordinate-block">
-                <span>Координата 1: {{ .order.Coord1 }}</span>
-            </div>
-            <div class="coordinate-block">
-                <span>Координата 2: {{ .order.Coord2 }}</span>
-            </div>
-        </div>
+<!--        <div class="coordinates-container">-->
+<!--            <div class="coordinate-block">-->
+<!--                <span>Координата 1: {{ .order.CoordStar1 }}</span>-->
+<!--            </div>-->
+<!--            <div class="coordinate-block">-->
+<!--                <span>Координата 2: {{ .order.CoordStar2 }}</span>-->
+<!--            </div>-->
+<!--        </div>-->
 
         <p class="description"><strong>Описание:</strong> {{ .order.Description }}</p>
-        <p class="price"><strong>Цена:</strong> {{ .order.Price }} ₽</p>
+<!--        <p class="price"><strong>Цена:</strong> {{ .order.Price }} ₽</p>-->
 
         <div class="buttons-container">
             <a href="/hello" class="back-button">← Назад к списку</a>
