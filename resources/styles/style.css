@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Serif', serif;
+}
+
+body {
+    background: radial-gradient(ellipse at top, #1e1e2f, #111);
+    color: #f2f2f2;
+    padding: 40px;
+    line-height: 1.6;
+}
+
+/* Заголовок */
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 42px;
+    color: #EFEFEF;
+    text-shadow: 0 0 10px rgba(200, 200, 255, 0.4);
+}
+
+/* Форма поиска */
+form[action="/"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+input[type="text"], input[type="date"] {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    outline: none;
+    color: #222;
+    background: #f8f8f8;
+    min-width: 200px;
+}
+
+button {
+    background-color: #6a5acd;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    background-color: #4e44a1;
+    transform: scale(1.05);
+}
+
+/* Таблица */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    margin-bottom: 50px;
+}
+
+th, td {
+    padding: 12px 16px;
+    text-align: center;
+}
+
+th {
+    background: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+a {
+    color: #a7a7ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Форма создания новой заявки */
+h2 {
+    margin-bottom: 15px;
+    font-size: 28px;
+    color: #fff;
+}
+
+form[action="/order"] {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    margin: 0 auto 50px auto;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+form[action="/order"] label {
+    display: block;
+    margin: 10px 0 6px;
+    font-weight: 500;
+}
+
+form[action="/order"] input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+p {
+    text-align: center;
+    color: #bbb;
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список заявок</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+<h1>Список заявок</h1>
+
+<form method="get" action="/">
+    <label>Поиск по статусу:</label>
+    <input type="text" name="status" value="{{.status}}" placeholder="черновик, завершён...">
+    <button type="submit">Найти</button>
+</form>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>ID</th>
+        <th>Статус</th>
+        <th>Дата создания</th>
+        <th>Создатель</th>
+        <th>Действие</th>
+    </tr>
+    {{range .orders}}
+    <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Status}}</td>
+        <td>{{.CreatedAt.Format "02.01.2006 15:04"}}</td>
+        <td>{{.Creator.Username}}</td>
+        <td>
+            <a href="/order/{{.ID}}">Открыть</a>
+            <form method="post" action="/order/{{.ID}}/delete" style="display:inline;">
+                <button type="submit">Удалить</button>
+            </form>
+        </td>
+    </tr>
+    {{end}}
+</table>
+
+<h2>Создать новую заявку</h2>
+<form method="post" action="/order">
+    <label>Дата наблюдения:</label>
+    <input type="date" name="observation_date" required>
+    <br>
+    <label>Широта:</label>
+    <input type="text" name="observer_latitude">
+    <br>
+    <label>Долгота:</label>
+    <input type="text" name="observer_longitude">
+    <br>
+    <button type="submit">Создать черновик</button>
+</form>
+
+<p>Текущее время: {{.time.Format "02.01.2006 15:04:05"}}</p>
+</body>
+</html>
