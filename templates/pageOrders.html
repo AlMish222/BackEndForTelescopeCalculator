@@ -24,13 +24,13 @@
     </tr>
     {{range .orders}}
     <tr>
-        <td>{{.ID}}</td>
+        <td>{{.ObservationID}}</td>
         <td>{{.Status}}</td>
         <td>{{.CreatedAt.Format "02.01.2006 15:04"}}</td>
         <td>{{.Creator.Username}}</td>
         <td>
-            <a href="/order/{{.ID}}">Открыть</a>
-            <form method="post" action="/order/{{.ID}}/delete" style="display:inline;">
+            <a href="/order/{{.ObservationID}}">Открыть</a>
+            <form method="post" action="/order/{{.ObservationID}}/delete" style="display:inline;">
                 <button type="submit">Удалить</button>
             </form>
         </td>
@@ -51,7 +51,5 @@
     <br>
     <button type="submit">Создать черновик</button>
 </form>
-
-<p>Текущее время: {{.time.Format "02.01.2006 15:04:05"}}</p>
 </body>
 </html>

@@ -1,0 +1,50 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Звезда - {{ .star.StarName }}</title>
+    <link rel="stylesheet" href="/styles/pageStarDetail_style.css">
+</head>
+<body>
+    <header>
+        <div class="page-title">Информация о звезде</div>
+
+        <div class="header-buttons">
+            <div class="home-button-container">
+                <a href="/stars"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+            </div>
+
+            <div class="cart-wrapper">
+                {{ if .hasDraft }}
+                    <a href="/order/{{ .draftID }}" class="cart-button-link">
+                        <div class="cart-button-container">
+                            <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
+                            <span class="cart-count">{{ .cartCount }}</span>
+                        </div>
+                    </a>
+                {{ else }}
+                    <div class="cart-button-container disabled" title="У вас нет активного черновика">
+                        <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
+                        <span class="cart-count">{{ .cartCount }}</span>
+                    </div>
+                {{ end }}
+            </div>
+        </div>
+    </header>
+
+    <div class="order-container">
+        <h1>Информация о звезде: {{ .star.StarName }}</h1>
+        <img src="{{ .star.ImageURL }}" alt="{{ .star.StarName }}" class="order-image">
+        <h2>Название: {{ .star.StarName }}</h2>
+        <p class="description"><strong>Описание:</strong> {{ .star.Description }}</p>
+
+        <div class="buttons-container">
+            <a href="/stars" class="back-button">← Назад к списку</a>
+            <form method="post" action="/star/{{ .star.StarID }}/add">
+                <button type="submit" class="add-to-cart-button">Добавить в заявку</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+

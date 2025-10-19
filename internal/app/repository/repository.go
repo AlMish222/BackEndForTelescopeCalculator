@@ -1,228 +1,33 @@
 package repository
 
 import (
-	"fmt"
-	"strings"
-	_ "time"
+	"Lab1/internal/app/models"
+	"errors"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
+	DB *gorm.DB
 }
 
-func NewRepository() (*Repository, error) {
-	return &Repository{}, nil
-}
-
-type Order struct { //Star
-	ID               int
-	ServiceID        int
-	ImageURL         string
-	Title            string
-	Description      string
-	ShortDescription string
-	Price            float64
-	Result           string
-	Quantity         int
-	CoordStar1       string
-	CoordStar2       string
-	ObservationDate  string
-	ObserverLat      string
-	ObserverLong     string
-}
-
-type Cart struct {
-	ID     int
-	Orders []Order
-}
-
-var cart = Cart{
-	ID:     1,
-	Orders: []Order{},
-}
-
-func (r *Repository) GetOrders() ([]Order, error) {
-	orders := []Order{
-		{
-			ID:               1,
-			ServiceID:        101,
-			ImageURL:         "http://127.0.0.1:9000/test/Sirius.png",
-			Title:            "Сириус",
-			ShortDescription: "Звезда созвездия Большого Пса",
-			Description: "звезда созвездия Большого Пса, главная последовательность," +
-				" спектрального класса A1. Это самая яркая звезда ночного неба, её светимость в 25 раз превышает светимость Солнца." +
-				" Некоторые характеристики:\nНаходится на расстоянии 8,6 светового года от Солнечной системы и является" +
-				" одной из ближайших к Земле звёзд. Виден из любого региона Земли, за исключением самых северных её областей." +
-				" Вместе с Проционом и Бетельгейзе образует одну из вершин Зимнего треугольника в северном полушарии." +
-				" При правильных условиях Сириус можно увидеть даже днём невооружённым глазом. Для этого небо должно" +
-				" быть очень ясным, наблюдатель должен находиться на большой высоте, звезда должна проходить прямо над" +
-				" ним, а Солнце — близко к горизонту. Возраст системы Сириуса, по современным исследованиям, составляет" +
-				" примерно 230 млн лет (оценки варьируются от 200 до 300 млн лет)",
-			Price:      150,
-			Result:     "42.5",
-			CoordStar1: "RA: 06h 45m 09s",
-			CoordStar2: "Dec: -16° 42′ 58″",
-		},
-		{
-			ID:               2,
-			ServiceID:        102,
-			ImageURL:         "http://127.0.0.1:9000/test/Polar.png",
-			Title:            "Полярная звезда",
-			ShortDescription: "Самая яркая звезда в созвездии Малой Медведицы",
-			Description: "Самая яркая звезда в созвездии Малой Медведицы, расположена вблизи Северного полюса мира." +
-				" \nНекоторые характеристики:\nЭто жёлтый сверхгигант спектрального класса F7Ib." +
-				" Расстояние до Земли — 447 ± 1,6 световых лет. Находится менее чем в 1° от Северного полюса мира," +
-				" поэтому почти неподвижна при суточном вращении звёздного неба. Направление на неё практически совпадает" +
-				" с направлением на север, а высота над горизонтом равна географической широте места наблюдения." +
-				" Относится к классу цефеидов — пульсирующих звёзд. Она то увеличивается, то уменьшается в размере," +
-				" из-за чего её яркость тоже меняется. В центре системы располагается сверхгигант Полярная А," +
-				" превосходящий Солнце по яркости в 2000 раз и по массе в 6,4–6,7 раза. \nПолярная звезда — тройная звёздная" +
-				" система, в которую входят Полярная A, Полярная Ab и Полярная B. Все три звезды относятся к" +
-				" спектральному типу F и обычно имеют белый или бело-жёлтый цвет.",
-			Price:      1501,
-			Result:     "36.7",
-			CoordStar1: "RA: 02h 31m 48?70s",  // Прямое восхождение
-			CoordStar2: "Dec: +89° 15′ 51,00", // Склонение
-		},
-		{
-			ID:               3,
-			ServiceID:        103,
-			ImageURL:         "http://127.0.0.1:9000/test/Carinae.png",
-			Title:            "Звезда Эта Киля",
-			ShortDescription: "Звёздная система в созвездии Киля",
-			Description: "Звёздная система в созвездии Киля. Состоит как минимум из двух гравитационно-связанных" +
-				" звёзд. \nНекоторые характеристики:\nСистема расположена на расстоянии 7500–8000 световых лет от Солнца." +
-				" \nГлавная звезда — яркая голубая переменная, одна из самых больших и неустойчивых известных науке звёзд," +
-				" с массой около 150 солнечных, 30 из которых звезда уже сбросила. \nВторая звезда — горячий голубой" +
-				" сверхгигант, обращается вокруг главной звезды, масса приблизительно 30 солнечных, однако из-за плотной" +
-				" красной туманности, окружающей звезду, наблюдения компаньона затруднено для телескопов. \nСуммарная" +
-				" светимость входящих в систему объектов более чем в пять миллионов раз превышает яркость Солнца." +
-				" \nЭта Киля является незаходящей звездой к югу от 30° южной широты, никогда не видна выше 30° северной" +
-				" широты. Астрономы считают, что в конце своей жизни Эта Киля превратится в сверхновую, временно увеличив" +
-				" свою яркость в несколько раз и выбросив в космическое пространство огромное количество вещества и" +
-				" произведя мощнейший гамма-всплеск.",
-			Price:      1502,
-			Result:     "40.5",
-			CoordStar1: "RA: 06h 45m 09s",
-			CoordStar2: "Dec: -16° 42′ 58″",
-		},
-		{
-			ID:               4,
-			ServiceID:        104,
-			ImageURL:         "http://127.0.0.1:9000/test/Arcturus.png",
-			Title:            "Звезда Арктур",
-			ShortDescription: "Главная звезда созвездия Волопаса",
-			Description: "Главная звезда созвездия Волопаса, известная также как Страж Медведицы. \nНекоторые" +
-				" характеристики Арктура:\nМасса и размеры: масса Арктура примерно равна солнечной, но радиус превышает" +
-				" радиус Солнца в 27 раз. Это делает его необычайно «лёгкой» звездой для своих размеров.\nТемпература и" +
-				" яркость: Арктур холоднее Солнца на 1500 градусов, но светит в 110 раз ярче. Его яркий оранжевый свет" +
-				" виден даже в крупных городах.\nВозраст: этой древней звезде около 10 миллиардов лет, она намного старше" +
-				" Солнца.\nСкорость и движение: звезда движется с колоссальной скоростью — 120 км/с относительно Солнечной" +
-				" системы. Угловое расстояние в 30′ она преодолевает за 800 лет.\nПоток Арктура: Арктур входит в группу" +
-				" из более чем 50 звёзд, называемую «Потоком Арктура». Эта группа, вероятно, не имеет сейчас отношения к" +
-				" галактике Млечный Путь.\nПроисхождение: Арктур относится к разряду оранжевых гигантов спектрального" +
-				" класса К, учёные считают, что он сформировался в другой галактике, которая впоследствии была поглощена" +
-				" Млечным путём.",
-			Price:      1503,
-			Result:     "10.5",
-			CoordStar1: "RA: 06h 45m 09s",
-			CoordStar2: "Dec: -16° 42′ 58″",
-		},
-	}
-
-	if len(orders) == 0 {
-		return nil, fmt.Errorf("массив пустой")
-	}
-	return orders, nil
-}
-
-func (r *Repository) GetOrder(id int) (Order, error) {
-	orders, err := r.GetOrders()
+func NewRepository(dsn string) (*Repository, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return Order{}, err
+		return nil, err
 	}
-
-	for _, order := range orders {
-		if order.ID == id {
-			return order, nil
-		}
-	}
-	return Order{}, fmt.Errorf("заказ не найден")
+	return &Repository{DB: db}, nil
 }
 
-func (r *Repository) GetOrdersByTitle(title string) ([]Order, error) {
-	orders, err := r.GetOrders()
+func (r *Repository) GetDraftOrder(userID int) (*models.Observation, error) {
+	var order models.Observation
+	err := r.DB.Where("creator_id = ? AND status = ?", userID, "черновик").First(&order).Error
 	if err != nil {
-		return []Order{}, err
-	}
-
-	var result []Order
-
-	for _, order := range orders {
-		if strings.Contains(strings.ToLower(order.Title), strings.ToLower(title)) {
-			result = append(result, order)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
 		}
+		return nil, err
 	}
-
-	return result, nil
+	return &order, nil
 }
-
-func (r *Repository) GetCart() (Cart, error) {
-	return cart, nil
-}
-
-func addToCart(order Order) {
-	for i, existing := range cart.Orders {
-		if existing.ID == order.ID {
-			cart.Orders[i].Quantity++
-			return
-		}
-	}
-	order.Quantity = 1
-	cart.Orders = append(cart.Orders, order)
-}
-
-func (c *Cart) TotalQuantity() int {
-	total := 0
-	for _, order := range c.Orders {
-		if order.Quantity > 0 {
-			total += order.Quantity
-		} else {
-			total++
-		}
-	}
-	return total
-}
-
-func (r *Repository) GetCartByID(id int) (Cart, error) {
-	if cart.ID == id {
-		return cart, nil
-	}
-	return Cart{}, fmt.Errorf("корзина не найдена")
-}
-
-func init() {
-	orders, _ := (&Repository{}).GetOrders()
-
-	orders[0].ObservationDate = "01.10.2025, 16:55"
-	orders[0].ObserverLat = "55.751244" // Москва
-	orders[0].ObserverLong = "37.618423"
-	addToCart(orders[0])
-
-	orders[1].ObservationDate = "02.10.2025, 17:55"
-	orders[1].ObserverLat = "59.934280" // Санкт-Петербург
-	orders[1].ObserverLong = "30.335099"
-	addToCart(orders[1])
-
-	orders[1].ObservationDate = "03.10.2025, 17:55"
-	orders[1].ObserverLat = "51.507351" // Лондон
-	orders[1].ObserverLong = "-0.127758"
-	addToCart(orders[1])
-
-	orders[2].ObservationDate = "04.10.2025, 20:20"
-	orders[2].ObserverLat = "40.712776" // Нью-Йорк
-	orders[2].ObserverLong = "-74.005974"
-	addToCart(orders[2])
-}
-
-//доделать ф-ию, что если за одной звездой наблюдение в разное время, то нужно,
-//чтобы карточки шли отдельно, а не сходились

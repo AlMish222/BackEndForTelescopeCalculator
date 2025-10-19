@@ -3,8 +3,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lab1</title>
-    <link rel="stylesheet" href="/static/styles/pageStars_style.css">
+    <title>Список звёзд</title>
+    <link rel="stylesheet" href="/styles/pageStars_style.css">
 </head>
 <body>
 <div class="space">
@@ -12,39 +12,50 @@
     <header>
         <div class="page-title">Расчёт углов наведения стационарного телескопа</div>
         <div class="home-button-container">
-            <a href="/hello"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+            <a href="/stars"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
         </div>
     </header>
 
     <div class="search-and-cart">
-        <form action="/hello" method="GET" class="search-form-stars">
+        <form action="/stars" method="GET" class="search-form-stars">
             <input type="text" name="query" placeholder="Введите запрос" value="{{ .query }}" class="search-input-top">
             <button type="submit" class="search-button-top">Найти</button>
         </form>
 
         <div class="cart-wrapper">
-            <a href="/cart/1" class="cart-button-link">
+            {{ if .hasDraft }}
+            <a href="/order/{{ .draftID }}" class="cart-button-link">
                 <div class="cart-button-container">
                     <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
                     <span class="cart-count">{{ .cartCount }}</span>
                 </div>
             </a>
+            {{ else }}
+            <div class="cart-button-container disabled" title="У вас нет активного черновика">
+                <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
+                <span class="cart-count">{{ .cartCount }}</span>
+            </div>
+            {{ end }}
         </div>
     </div>
 
 
 
     <div class="container">
-        {{ range .orders }}
+        {{ range .stars }}
         <div class="card">
             <div class="image-container">
                 <div class="image-background"></div>
-                <img src="{{ .ImageURL }}" class="image" alt="{{ .Title }}">
+                <img src="{{ .ImageURL }}" class="image" alt="{{ .StarName }}">
             </div>
-            <p class="title">{{ .Title }}</p>
+            <p class="title">{{ .StarName }}</p>
             <p class="short-description">{{ .ShortDescription }}</p>
             <div class="down">
-                <a href="/order/{{ .ID }}" class="card-button">Подробнее</a>
+                <a href="/stars/{{ .StarID }}" class="card-button">Подробнее</a>
+
+                <form method="post" action="/star/{{ .StarID }}/add">
+                    <button type="submit" class="card-button">Добавить в заявку</button>
+                </form>
             </div>
         </div>
         {{ end }}

@@ -2,43 +2,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Корзина заказов</title>
-    <link rel="stylesheet" href="/static/styles/shoppingCartPageWithApplications_style.css">
+    <link rel="stylesheet" href="/styles/shoppingCartPageWithApplications_style.css">
 </head>
 <body>
 <header>
     <div class="page-title">Список звёзд для расчёта</div>
-    <a href="/hello" class="home-button-header">
+    <a href="/stars" class="home-button-header">
         <img src="http://127.0.0.1:9000/test/home.png" alt="home">
     </a>
 </header>
 
-<div class="page-controls">
-<!--    <form action="/search" method="get" class="search-form">-->
-<!--        <input type="text" name="query" placeholder="Введите название звезды..." class="search-input">-->
-<!--        <button type="submit" class="search-button">Найти</button>-->
-<!--    </form>-->
-</div>
-
-<div class="cart-container" id="cart-{{ .cart.ID }}">
+<div class="cart-container" id="cart-{{ .order.ObservationID }}">
     <h1>Ваша корзина</h1>
 
-    {{ if .cart.Orders }}
+    {{ if .order.ObservationStars }}
     <div class="cart-items">
-        {{ range .cart.Orders }}
+        {{ range .order.ObservationStars }}
         <div class="cart-item">
             <div class="item-image-container">
                 <div class="item-image-background"></div>
-                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="item-image">
+                <img src="{{ .Star.ImageURL }}" alt="{{ .Star.StarName }}" class="item-image">
             </div>
 
             <div class="item-info">
-                <h3 class="item-title">{{ .Title }}</h3>
-                <p class="item-description">{{ .ShortDescription }}</p>
-                <p>Результат вычислений: {{ .Result }}</p>
+                <h3 class="item-title">{{ .Star.StarName }}</h3>
+                <p class="item-description">{{ .Star.ShortDescription }}</p>
 
                 <div class="item-actions">
-                    <a href="/order/{{.ID}}" class="details-button">Подробнее</a>
-                    <!--  <button class="remove-button">Удалить из корзины</button>-->
+                    <a href="/stars/{{ .Star.StarID }}" class="details-button">Подробнее</a>
                 </div>
 
                 {{ if gt .Quantity 0 }}
@@ -50,26 +41,34 @@
                 {{ end }}
 
                 <div class="observation-container">
-                    <span class="observer-coord">Широта: {{ .ObserverLat }}</span>
-                    <span class="observer-coord">Долгота: {{ .ObserverLong }}</span>
-                    <span class="observation-date">Дата наблюдения: {{ .ObservationDate }}</span>
+                    <span class="observer-coord">Широта: {{ $.order.ObserverLatitude }}</span>
+                    <span class="observer-coord">Долгота: {{ $.order.ObserverLongitude }}</span>
+                    <span class="observation-date">Дата наблюдения: {{ $.order.ObservationDate }}</span>
                 </div>
             </div>
 
             <div class="star-coord-container">
-                <span class="star-coord">{{ .CoordStar1 }}</span>
-                <span class="star-coord">{{ .CoordStar2 }}</span>
+                <span class="star-coord">RA: {{ .Star.RA }}</span>
+                <span class="star-coord">Dec: {{ .Star.Dec }}</span>
             </div>
-
         </div>
         {{ end }}
     </div>
     {{ else }}
     <div class="empty-cart">
         <p>Корзина пуста</p>
-        <a href="/hello" class="back-button">Вернуться к выбору</a>
+        <a href="/stars" class="back-button">Вернуться к выбору</a>
     </div>
     {{ end }}
+</div>
+
+<div class="cart-footer-left">
+    <form method="post" action="/order/{{ .order.ObservationID }}/delete" style="display:inline;">
+        <button type="submit" class="footer-button delete-order"
+                onclick="return confirm('Вы уверены, что хотите удалить эту заявку?');">
+            Удалить заявку
+        </button>
+    </form>
 </div>
 
 <!--<div class="cart-footer-left">-->

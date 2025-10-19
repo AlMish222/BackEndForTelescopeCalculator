@@ -17,10 +17,16 @@ func NewHandler(r *repository.Repository) *Handler {
 
 func (h *Handler) RegisterHandler(rou *gin.Engine) {
 	rou.GET("/", h.GetOrders)
+	rou.GET("/stars", h.GetStars)
+	rou.GET("/stars/:id", h.GetStarByID)
+	rou.POST("/order/:id/delete", h.DeleteOrder)
+
 	rou.GET("/order/:id", h.GetOrder)
 	rou.POST("/order", h.CreateOrder)
+
 	rou.POST("/order/:id/update", h.UpdateOrder)
-	rou.POST("/order/:id/delete", h.DeleteOrder)
+
+	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
 }
 
 func (h *Handler) RegisterStatic(rou *gin.Engine) {

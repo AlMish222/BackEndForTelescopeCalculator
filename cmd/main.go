@@ -9,7 +9,6 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -20,27 +19,21 @@ func main() {
 		log.Fatalf("Ошибка загрузки конфига: %v", err)
 	}
 
-	// --- Подключаемся к БД ---
-	db, err := sqlx.Connect(
-		"postgres",
-		"host=127.0.0.1 port=5432 user=alex password=password123 dbname=RIP sslmode=disable",
-	)
+	dsn := "host=127.0.0.1 user=alex password=password123 dbname=RIP port=5432 sslmode=disable"
+
+	repo, err := repository.NewRepository(dsn)
 	if err != nil {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
 	}
 
-	// --- Создаем репозиторий ---
-	repo, _ := repository.NewRepository(db)
-
-	// --- Создаем handler ---
 	h := handler.NewHandler(repo)
 
 	// --- Создаем Gin роутер ---
 	router := gin.Default()
 
-	// --- Создаем приложение в стиле методички ---
 	application := app.NewApp(cfg, router, h)
 
 	// --- Запуск ---
+	log.Println("Сервер запущен на http://127.0.0.1:9000")
 	application.RunApp()
 }
