@@ -57,14 +57,23 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 func (h *Handler) GetStars(ctx *gin.Context) {
 	userID := 1 // временный ID пользователя
 
-	stars, err := h.Repository.GetStars()
+	query := ctx.Query("query") // <-- добавляем строку поиска
+
+	var stars []models.Star
+	var err error
+
+	if query == "" {
+		stars, err = h.Repository.GetStars()
+	} else {
+		stars, err = h.Repository.SearchStars(query) // <-- новый метод
+	}
+
 	if err != nil {
 		logrus.Error("Ошибка получения звёзд: ", err)
 		ctx.String(http.StatusInternalServerError, "Ошибка загрузки звёзд")
 		return
 	}
 
-	// Получаем информацию о корзине
 	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)
@@ -72,6 +81,7 @@ func (h *Handler) GetStars(ctx *gin.Context) {
 
 	ctx.HTML(http.StatusOK, "pageStars.html", gin.H{
 		"stars":     stars,
+		"query":     query,
 		"hasDraft":  hasDraft,
 		"draftID":   draftID,
 		"cartCount": cartCount,

@@ -20,3 +20,11 @@ func (r *Repository) GetStarByID(id int) (*models.Star, error) {
 	}
 	return &star, nil
 }
+
+func (r *Repository) SearchStars(query string) ([]models.Star, error) {
+	var stars []models.Star
+	err := r.DB.
+		Where("LOWER(star_name) LIKE LOWER(?)", "%"+query+"%").
+		Find(&stars).Error
+	return stars, err
+}
