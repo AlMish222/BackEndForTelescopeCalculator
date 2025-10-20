@@ -464,4 +464,17 @@ header {
     display: inline-block;
 }
 
+.footer-button.delete-order {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
 
+.footer-button.delete-order:hover {
+    background-color: #a93226;
+}

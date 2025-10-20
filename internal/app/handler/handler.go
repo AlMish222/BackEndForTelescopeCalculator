@@ -2,12 +2,9 @@ package handler
 
 import (
 	"Lab1/internal/app/repository"
-	"net/http"
-	"strconv"
-	"time"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -15,105 +12,25 @@ type Handler struct {
 }
 
 func NewHandler(r *repository.Repository) *Handler {
-	return &Handler{
-		Repository: r,
-	}
+	return &Handler{Repository: r}
 }
 
-func (h *Handler) GetOrders(ctx *gin.Context) {
-	var orders []repository.Order
-	var err error
+func (h *Handler) RegisterHandler(rou *gin.Engine) {
+	rou.GET("/", h.GetOrders)
+	rou.GET("/stars", h.GetStars)
+	rou.GET("/stars/:id", h.GetStarByID)
+	rou.POST("/order/:id/delete", h.DeleteOrder)
 
-	searchQuery := ctx.Query("query")
-	if searchQuery == "" {
-		orders, err = h.Repository.GetOrders()
-		if err != nil {
-			logrus.Error(err)
-		}
-	} else {
-		orders, err = h.Repository.GetOrdersByTitle(searchQuery)
-		if err != nil {
-			logrus.Error(err)
-		}
-	}
+	rou.GET("/order/:id", h.GetOrder)
+	rou.POST("/order", h.CreateOrder)
 
-	cart, _ := h.Repository.GetCart()
+	rou.POST("/order/:id/update", h.UpdateOrder)
 
-	ctx.HTML(http.StatusOK, "pageStars.html", gin.H{
-		"time":      time.Now().Format("15:04:05"),
-		"orders":    orders,
-		"query":     searchQuery,
-		"cartCount": cart.TotalQuantity(),
-	})
+	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
 }
 
-func (h *Handler) GetOrder(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	order, err := h.Repository.GetOrder(id)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	cart, _ := h.Repository.GetCart()
-
-	ctx.HTML(http.StatusOK, "calculationPage.html", gin.H{
-		"order":     order,
-		"cartCount": cart.TotalQuantity(),
-	})
+func (h *Handler) RegisterStatic(rou *gin.Engine) {
+	absPath, _ := filepath.Abs("templates/*")
+	rou.LoadHTMLGlob(absPath)
+	rou.Static("/styles", "./resources/styles")
 }
-
-func (h *Handler) GetCart(c *gin.Context) {
-	cart, err := h.Repository.GetCart()
-	if err != nil {
-		c.String(500, "Ошибка получения корзины")
-		return
-	}
-
-	c.HTML(http.StatusOK, "shoppingCartPageWithApplications.html", gin.H{
-		"cart":      cart,
-		"cartCount": cart.TotalQuantity(),
-	})
-}
-
-func (h *Handler) GetCartByID(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		c.String(400, "Неверный ID корзины")
-		return
-	}
-
-	cart, err := h.Repository.GetCartByID(id)
-	if err != nil {
-		c.String(404, "Корзина не найдена")
-		return
-	}
-
-	c.HTML(200, "cart.html", gin.H{
-		"cart": cart,
-	})
-}
-
-//func (h *Handler) AddToCart(ctx *gin.Context) {
-//	idStr := ctx.Param("id")
-//	id, err := strconv.Atoi(idStr)
-//	if err != nil {
-//		ctx.String(400, "Неверный ID")
-//		return
-//	}
-//
-//	order, err := h.Repository.GetOrder(id)
-//	if err != nil {
-//		ctx.String(404, "Заказ не найден")
-//		return
-//	}
-//
-//	h.Repository.AddToCart(order)
-//	ctx.Status(200)
-//}
