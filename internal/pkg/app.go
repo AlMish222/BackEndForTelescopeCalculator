@@ -5,6 +5,7 @@ import (
 
 	"Lab1/internal/app/config"
 	"Lab1/internal/app/handler"
+	"Lab1/internal/app/router"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -27,6 +28,7 @@ func NewApp(cfg *config.Config, r *gin.Engine, h *handler.Handler) *Application 
 func (a *Application) RunApp() {
 	log.Info("Server start up")
 
+	router.InitRoutes(a.Router)
 	// Регистрируем маршруты и статику
 	a.Handler.RegisterHandler(a.Router)
 	a.Handler.RegisterStatic(a.Router)
