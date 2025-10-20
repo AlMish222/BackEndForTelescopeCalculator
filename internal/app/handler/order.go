@@ -43,12 +43,12 @@ func (h *Handler) GetOrders(ctx *gin.Context) {
 	})
 }
 
-// Получение одной заявки по ID
+// Получение одной корзины по ID
 func (h *Handler) GetOrder(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		logrus.Error("Некорректный ID заявки: ", err)
+		logrus.Error("Некорректный ID корзины: ", err)
 		ctx.String(http.StatusBadRequest, "Неверный ID")
 		return
 	}
@@ -61,13 +61,13 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 		Preload("Moderator").
 		First(&order, id).Error
 	if err != nil {
-		logrus.Error("Ошибка получения заявки: ", err)
-		ctx.String(http.StatusNotFound, "Заявка не найдена")
+		logrus.Error("Ошибка получения корзины: ", err)
+		ctx.String(http.StatusNotFound, "Корзина не найдена")
 		return
 	}
 
 	if order.Status == "удалён" {
-		ctx.String(http.StatusNotFound, "Заявка не найдена")
+		ctx.String(http.StatusNotFound, "Корзина не найдена")
 		return
 	}
 
@@ -89,8 +89,8 @@ func (h *Handler) CreateOrder(ctx *gin.Context) {
 	newOrder.CreatedAt = time.Now()
 
 	if err := h.Repository.CreateOrder(&newOrder); err != nil {
-		logrus.Error("Ошибка создания заявки: ", err)
-		ctx.String(http.StatusInternalServerError, "Ошибка создания заявки")
+		logrus.Error("Ошибка создания корзины: ", err)
+		ctx.String(http.StatusInternalServerError, "Ошибка создания корзины")
 		return
 	}
 
@@ -108,7 +108,7 @@ func (h *Handler) UpdateOrder(ctx *gin.Context) {
 
 	order, err := h.Repository.GetOrder(id)
 	if err != nil {
-		ctx.String(http.StatusNotFound, "Заявка не найдена")
+		ctx.String(http.StatusNotFound, "Корзина не найдена")
 		return
 	}
 
@@ -122,7 +122,7 @@ func (h *Handler) UpdateOrder(ctx *gin.Context) {
 
 	order.Status = input.Status
 	if err := h.Repository.UpdateOrder(order); err != nil {
-		ctx.String(http.StatusInternalServerError, "Ошибка обновления заявки")
+		ctx.String(http.StatusInternalServerError, "Ошибка обновления корзины")
 		return
 	}
 
@@ -134,18 +134,18 @@ func (h *Handler) DeleteOrder(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		logrus.Error("Некорректный ID заявки: ", err)
+		logrus.Error("Некорректный ID корзины: ", err)
 		ctx.String(http.StatusBadRequest, "Неверный ID")
 		return
 	}
 
 	if err := h.Repository.DeleteOrder(id); err != nil {
-		logrus.Error("Ошибка при логическом удалении заявки: ", err)
-		ctx.String(http.StatusInternalServerError, "Ошибка при удалении заявки")
+		logrus.Error("Ошибка при логическом удалении корзины: ", err)
+		ctx.String(http.StatusInternalServerError, "Ошибка при удалении корзины")
 		return
 	}
 
-	logrus.Infof("Заявка #%d успешно логически удалена", id)
+	logrus.Infof("Корзина #%d успешно логически удалена", id)
 	ctx.Redirect(http.StatusSeeOther, "/stars")
 }
 
@@ -153,13 +153,13 @@ func (h *Handler) CompleteOrder(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "Неверный ID заявки")
+		ctx.String(http.StatusBadRequest, "Неверный ID корзины")
 		return
 	}
 
 	order, err := h.Repository.GetOrder(id)
 	if err != nil {
-		ctx.String(http.StatusNotFound, "Заявка не найдена")
+		ctx.String(http.StatusNotFound, "Корзина не найдена")
 		return
 	}
 
@@ -170,7 +170,7 @@ func (h *Handler) CompleteOrder(ctx *gin.Context) {
 
 	// вычисляем результат для каждой звезды
 	for _, obsStar := range order.ObservationStars {
-		result := h.calculateResult(order, obsStar.Star)
+		result := h.calculateResult(&obsStar, obsStar.Star)
 		err := h.Repository.UpdateObservationStarResult(order.ObservationID, obsStar.Star.StarID, result)
 		if err != nil {
 			ctx.String(http.StatusInternalServerError, "Ошибка сохранения результата")
@@ -184,17 +184,17 @@ func (h *Handler) CompleteOrder(ctx *gin.Context) {
 	order.CompletionDate = &now
 
 	if err := h.Repository.UpdateOrder(order); err != nil {
-		ctx.String(http.StatusInternalServerError, "Ошибка завершения заявки")
+		ctx.String(http.StatusInternalServerError, "Ошибка завершения корзины")
 		return
 	}
 
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/order/%d", order.ObservationID))
 }
 
-func (h *Handler) calculateResult(order *models.Observation, star models.Star) float64 {
+func (h *Handler) calculateResult(obsStar *models.ObservationStar, star models.Star) float64 {
 	// Пример формулы:
 	// "Результат" = √(RA² + Dec²) * (1 + |широта - долгота| / 180)
-	delta := math.Abs(order.ObserverLatitude - order.ObserverLongitude)
+	delta := math.Abs(obsStar.ObserverLatitude - obsStar.ObserverLongitude)
 	value := math.Sqrt(math.Pow(star.RA, 2)+math.Pow(star.Dec, 2)) * (1 + delta/180)
 	return math.Round(value*100) / 100 // округляем
 }

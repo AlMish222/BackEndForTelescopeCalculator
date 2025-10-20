@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Добавление звезды в заявку со статусом "черновик"
+// Добавление звезды в корзину со статусом "черновик"
 func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	starIDStr := ctx.Param("id")
 	userID := 1 // временный ID пользователя
@@ -38,22 +38,18 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 		ctx.Redirect(http.StatusSeeOther, "/stars")
 		return
 	}
-
 	// Добавляем новую связь
 	relation := models.ObservationStar{
 		ObservationID: order.ObservationID,
 		StarID:        starID,
-		IsMain:        false,
 		OrderNumber:   1,
 		Quantity:      1,
 	}
-
 	if err := h.Repository.DB.Create(&relation).Error; err != nil {
-		logrus.Error("Ошибка добавления звезды в заявку: ", err)
-		ctx.String(http.StatusInternalServerError, "Ошибка добавления звезды в заявку")
+		logrus.Error("Ошибка добавления звезды в корзину: ", err)
+		ctx.String(http.StatusInternalServerError, "Ошибка добавления звезды в корзину")
 		return
 	}
-
 	// Возвращаем обратно на страницу звёзд (без редиректа на заявку)
 	ctx.Redirect(http.StatusSeeOther, "/stars")
 }

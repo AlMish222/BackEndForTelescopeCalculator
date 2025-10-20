@@ -22,7 +22,7 @@ func (r *Repository) GetOrders() ([]models.Observation, error) {
 	return orders, nil
 }
 
-// Получение заявки по ID
+// Получение корзины по ID
 func (r *Repository) GetOrder(id int) (*models.Observation, error) {
 	var order models.Observation
 
@@ -39,7 +39,7 @@ func (r *Repository) GetOrder(id int) (*models.Observation, error) {
 	return &order, nil
 }
 
-// Получение заявок по статусу
+// Получение корзин по статусу
 func (r *Repository) GetOrdersByStatus(status string) ([]models.Observation, error) {
 	var orders []models.Observation
 	err := r.DB.Where("status = ?", status).Preload("Stars").Find(&orders).Error
@@ -49,18 +49,17 @@ func (r *Repository) GetOrdersByStatus(status string) ([]models.Observation, err
 	return orders, nil
 }
 
-// Создание новой заявки
+// Создание новой корзины
 func (r *Repository) CreateOrder(order *models.Observation) error {
 	return r.DB.Create(order).Error
 }
 
-// Обновление заявки (например, статус или даты)
+// Обновление корзины (например, статус или даты)
 func (r *Repository) UpdateOrder(order *models.Observation) error {
 	return r.DB.Save(order).Error
 }
 
-// Логическое удаление заявки
-
+// Логическое удаление корзины
 func (r *Repository) DeleteOrder(id int) error {
 	return r.DB.Exec(`UPDATE observations SET status = 'удалён' WHERE observation_id = ?`, id).Error
 }
@@ -102,12 +101,11 @@ func (r *Repository) GetCartInfo(userID int) (hasDraft bool, draftID int, cartCo
 	return true, draft.ObservationID, cartCount, nil
 }
 
-// Добавление звезды в заявку
+// Добавление звезды в корзину
 func (r *Repository) AddStarToOrder(orderID, starID int) error {
 	link := models.ObservationStar{
 		ObservationID: orderID,
 		StarID:        starID,
-		IsMain:        false,
 		OrderNumber:   1,
 		Quantity:      1,
 	}

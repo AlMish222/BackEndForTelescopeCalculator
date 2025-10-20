@@ -41,9 +41,9 @@
                 {{ end }}
 
                 <div class="observation-container">
-                    <span class="observer-coord">Широта: {{ $.order.ObserverLatitude }}</span>
-                    <span class="observer-coord">Долгота: {{ $.order.ObserverLongitude }}</span>
-                    <span class="observation-date">Дата наблюдения: {{ $.order.ObservationDate }}</span>
+                    <span class="observer-coord">Широта: {{ .ObserverLatitude }}</span>
+                    <span class="observer-coord">Долгота: {{ .ObserverLongitude }}</span>
+                    <span class="observation-date">Дата наблюдения: {{ .ObservationDate }}</span>
                 </div>
             </div>
 
@@ -65,8 +65,8 @@
 <div class="cart-footer-left">
     <form method="post" action="/order/{{ .order.ObservationID }}/delete" style="display:inline;">
         <button type="submit" class="footer-button delete-order"
-                onclick="return confirm('Вы уверены, что хотите удалить эту заявку?');">
-            Удалить заявку
+                onclick="return confirm('Вы уверены, что хотите удалить эту корзину?');">
+            Удалить корзину
         </button>
     </form>
 </div>

@@ -24,16 +24,13 @@ type Star struct {
 }
 
 type Observation struct {
-	ObservationID     int        `gorm:"primaryKey;column:observation_id"`
-	CreatorID         int        `gorm:"column:creator_id"`
-	ModeratorID       *int       `gorm:"column:moderator_id"`
-	CreatedAt         time.Time  `gorm:"column:created_at"`
-	Status            string     `gorm:"column:status"`
-	FormationDate     *time.Time `gorm:"column:formation_date"`
-	CompletionDate    *time.Time `gorm:"column:completion_date"`
-	ObservationDate   *time.Time `gorm:"column:observation_date"`
-	ObserverLatitude  float64    `gorm:"column:observer_latitude"`
-	ObserverLongitude float64    `gorm:"column:observer_longitude"`
+	ObservationID  int        `gorm:"primaryKey;column:observation_id"`
+	CreatorID      int        `gorm:"column:creator_id"`
+	ModeratorID    *int       `gorm:"column:moderator_id"`
+	CreatedAt      time.Time  `gorm:"column:created_at"`
+	Status         string     `gorm:"column:status"`
+	FormationDate  *time.Time `gorm:"column:formation_date"`
+	CompletionDate *time.Time `gorm:"column:completion_date"`
 
 	Creator   User  `gorm:"foreignKey:CreatorID;references:UserID"`
 	Moderator *User `gorm:"foreignKey:ModeratorID;references:UserID"`
@@ -43,12 +40,14 @@ type Observation struct {
 }
 
 type ObservationStar struct {
-	ObservationID int      `gorm:"primaryKey;column:observation_id"`
-	StarID        int      `gorm:"primaryKey;column:star_id"`
-	IsMain        bool     `gorm:"column:is_main"`
-	OrderNumber   int      `gorm:"column:order_number"`
-	Quantity      int      `gorm:"column:quantity"`
-	ResultValue   *float64 `gorm:"column:result_value"`
+	ObservationID     int        `gorm:"primaryKey;column:observation_id"`
+	StarID            int        `gorm:"primaryKey;column:star_id"`
+	OrderNumber       int        `gorm:"column:order_number"`
+	Quantity          int        `gorm:"column:quantity"`
+	ResultValue       *float64   `gorm:"column:result_value"`
+	ObservationDate   *time.Time `gorm:"column:observation_date"`
+	ObserverLatitude  float64    `gorm:"column:observer_latitude"`
+	ObserverLongitude float64    `gorm:"column:observer_longitude"`
 
 	Observation Observation `gorm:"foreignKey:ObservationID;references:ObservationID"`
 	Star        Star        `gorm:"foreignKey:StarID;references:StarID"`
