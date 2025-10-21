@@ -1,7 +1,6 @@
 package api
 
 import (
-	//"Lab1/internal/app/handler"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,6 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	api.Use(func(c *gin.Context) {
 		c.Set("db", db)
-		//c.Set("handler", h)
 		c.Next()
 	})
 
@@ -22,4 +20,5 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	InitStarAPI(db, api)
+	InitOrderAPI(db, api)
 }

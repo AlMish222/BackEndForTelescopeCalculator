@@ -20,6 +20,10 @@ func NewRepository(dsn string) (*Repository, error) {
 	return &Repository{DB: db}, nil
 }
 
+func NewRepositoryFromDB(db *gorm.DB) *Repository {
+	return &Repository{DB: db}
+}
+
 func (r *Repository) GetDraftOrder(userID int) (*models.Observation, error) {
 	var order models.Observation
 	err := r.DB.Where("creator_id = ? AND status = ?", userID, "черновик").First(&order).Error

@@ -15,6 +15,7 @@ var repo *repository.Repository
 
 func InitStarAPI(database *gorm.DB, r *gin.RouterGroup) {
 	db = database
+	repo = repository.NewRepositoryFromDB(db)
 	registerStarRoutes(r)
 }
 
@@ -148,6 +149,7 @@ func uploadStarImage(c *gin.Context) {
 func addStarToDraftOrder(c *gin.Context) {
 	userID := 1 // временно, пока нет авторизации
 	starIDStr := c.Param("id")
+
 	starID, err := strconv.Atoi(starIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID звезды"})
