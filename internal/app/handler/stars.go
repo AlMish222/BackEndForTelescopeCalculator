@@ -122,3 +122,28 @@ func (h *Handler) GetStarByID(ctx *gin.Context) {
 		"cartCount": cartCount, // тут общее количество звёзд в корзине
 	})
 }
+
+// +++API+++
+
+func (h *Handler) ApiGetStars(c *gin.Context) {
+	stars, err := h.Repository.GetStars()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения списка звёзд"})
+		return
+	}
+	c.JSON(http.StatusOK, stars)
+}
+
+func (h *Handler) ApiGetStarByID(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+		return
+	}
+	star, err := h.Repository.GetStarByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Звезда не найдена"})
+		return
+	}
+	c.JSON(http.StatusOK, star)
+}

@@ -10,7 +10,7 @@ type User struct {
 }
 
 type Star struct {
-	StarID           int     `gorm:"primaryKey;column:star_id"`
+	StarID           int     `gorm:"primaryKey;autoIncrement;column:star_id"`
 	StarName         string  `gorm:"column:star_name"`
 	ShortDescription string  `gorm:"column:short_description"`
 	Description      string  `gorm:"column:description"`

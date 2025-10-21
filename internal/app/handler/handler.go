@@ -1,6 +1,8 @@
+//goland:noinspection ALL
 package handler
 
 import (
+	"Lab1/internal/app/api"
 	"Lab1/internal/app/repository"
 	"path/filepath"
 
@@ -27,6 +29,8 @@ func (h *Handler) RegisterHandler(rou *gin.Engine) {
 	rou.POST("/order/:id/update", h.UpdateOrder)
 
 	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
+
+	api.RegisterRoutes(rou, h.Repository.DB)
 }
 
 func (h *Handler) RegisterStatic(rou *gin.Engine) {
