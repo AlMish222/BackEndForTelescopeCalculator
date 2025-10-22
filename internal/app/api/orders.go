@@ -1,6 +1,7 @@
 package api
 
 import (
+	"Lab1/internal/app/auth"
 	"Lab1/internal/app/models"
 	"Lab1/internal/app/repository"
 	"math"
@@ -36,7 +37,7 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 }
 
 func getCartInfo(c *gin.Context) {
-	userID := 1 // временно, пока нет авторизации
+	userID := auth.CurrentUserID()
 
 	order, err := repo.GetOrCreateDraftOrder(userID)
 	if err != nil {
@@ -61,29 +62,32 @@ func getCartInfo(c *gin.Context) {
 func getAllOrders(c *gin.Context) {
 	var orders []models.Observation
 
+	// Параметры фильтра из URL
+	from := c.Query("from")
+	to := c.Query("to")
 	status := c.Query("status")
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
 
-	query := db.Model(&models.Observation{}).
-		Preload("Creator").
-		Preload("Moderator").
-		Preload("ObservationStars") // при желании можно также предзагрузить звёзды
+	query := db.Model(&models.Observation{})
 
-	// фильтры
+	// Фильтр по дате формирования
+	if from != "" && to != "" {
+		query = query.Where("formation_date BETWEEN ? AND ?", from, to)
+	} else if from != "" {
+		query = query.Where("formation_date >= ?", from)
+	} else if to != "" {
+		query = query.Where("formation_date <= ?", to)
+	}
+
+	// Фильтр по статусу
 	if status != "" {
 		query = query.Where("status = ?", status)
 	}
-	if startDate != "" && endDate != "" {
-		// ожидается формат YYYY-MM-DD (или другой пригодный для Postgres)
-		query = query.Where("formation_date BETWEEN ? AND ?", startDate, endDate)
-	}
 
-	// исключаем черновики и удалённые
-	query = query.Where("status NOT IN ?", []string{"черновик", "удалён"})
+	// Исключаем удалённые заявки
+	query = query.Where("status != ?", "удалён")
 
-	if err := query.Order("created_at DESC").Find(&orders).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения списка заявок: " + err.Error()})
+	if err := query.Find(&orders).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения заявок: " + err.Error()})
 		return
 	}
 

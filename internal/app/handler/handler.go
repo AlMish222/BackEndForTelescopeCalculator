@@ -7,10 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
 )
 
 type Handler struct {
-	Repository *repository.Repository
+	Repository  *repository.Repository
+	MinioClient *minio.Client
 }
 
 func NewHandler(r *repository.Repository) *Handler {

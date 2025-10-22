@@ -1,12 +1,17 @@
 package api
 
 import (
+	"Lab1/internal/app/auth"
+	"Lab1/internal/app/config"
 	"Lab1/internal/app/models"
 	"Lab1/internal/app/repository"
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
 )
 
@@ -143,11 +148,54 @@ func deleteStar(c *gin.Context) {
 }
 
 func uploadStarImage(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "POST /api/stars/:id/image"})
+	idStr := c.Param("id")
+	starID, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+		return
+	}
+
+	// Получаем файл из запроса
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Файл не получен"})
+		return
+	}
+
+	// Генерируем уникальное имя файла (латиница)
+	filename := fmt.Sprintf("star_%d_%s", starID, file.Filename)
+
+	// Загружаем файл в MinIO
+	ctx := context.Background()
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка открытия файла: " + err.Error()})
+		return
+	}
+	defer src.Close()
+
+	_, err = config.MinioClient.PutObject(ctx, "test", filename, src, file.Size, minio.PutObjectOptions{
+		ContentType: file.Header.Get("Content-Type"),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки в MinIO: " + err.Error()})
+		return
+	}
+
+	// Обновляем поле ImageURL в БД
+	if err := db.Model(&models.Star{}).Where("star_id = ?", starID).Update("image_url", filename).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сохранения пути изображения: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Изображение успешно загружено",
+		"filename": filename,
+	})
 }
 
 func addStarToDraftOrder(c *gin.Context) {
-	userID := 1 // временно, пока нет авторизации
+	userID := auth.CurrentUserID()
 	starIDStr := c.Param("id")
 
 	starID, err := strconv.Atoi(starIDStr)

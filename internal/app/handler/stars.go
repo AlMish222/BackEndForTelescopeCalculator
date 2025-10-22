@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Lab1/internal/app/auth"
 	"Lab1/internal/app/models"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 // Добавление звезды в корзину со статусом "черновик"
 func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	starIDStr := ctx.Param("id")
-	userID := 1 // временный ID пользователя
+	userID := auth.CurrentUserID()
 	starID, err := strconv.Atoi(starIDStr)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "Некорректный ID звезды")
@@ -55,7 +56,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 }
 
 func (h *Handler) GetStars(ctx *gin.Context) {
-	userID := 1 // временный ID пользователя
+	userID := auth.CurrentUserID()
 
 	query := ctx.Query("query") // <-- добавляем строку поиска
 
@@ -108,7 +109,7 @@ func (h *Handler) GetStarByID(ctx *gin.Context) {
 	}
 
 	// Получаем данные корзины (черновик + количество элементов)
-	userID := 1 // временный ID пользователя
+	userID := auth.CurrentUserID()
 	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)

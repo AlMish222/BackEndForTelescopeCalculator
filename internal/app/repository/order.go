@@ -2,6 +2,9 @@ package repository
 
 import (
 	"Lab1/internal/app/models"
+	"time"
+
+	"gorm.io/gorm"
 )
 
 // Получение всех заявок (observations)
@@ -67,18 +70,16 @@ func (r *Repository) DeleteOrder(id int) error {
 // Получение или создание черновика
 func (r *Repository) GetOrCreateDraftOrder(userID int) (*models.Observation, error) {
 	var order models.Observation
-	err := r.DB.Where("creator_id = ? AND status = 'черновик'", userID).First(&order).Error
-	if err == nil {
-		return &order, nil
-	}
-
-	// если нет — создаём
-	order = models.Observation{
-		CreatorID: userID,
-		Status:    "черновик",
-	}
-	if err := r.DB.Create(&order).Error; err != nil {
-		return nil, err
+	err := r.DB.Where("creator_id = ? AND status = ?", userID, "черновик").First(&order).Error
+	if err == gorm.ErrRecordNotFound {
+		order = models.Observation{
+			CreatorID: userID,
+			Status:    "черновик",
+			CreatedAt: time.Now(),
+		}
+		if err := r.DB.Create(&order).Error; err != nil {
+			return nil, err
+		}
 	}
 	return &order, nil
 }
