@@ -29,6 +29,9 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 		orders.PUT("/:id/submit", submitOrder) // ✅ сформировать
 		orders.PUT("/:id/complete", completeOrder)
 		orders.DELETE("/:id", deleteOrder)
+
+		orders.DELETE("/observation-stars", deleteObservationStar)
+		orders.PUT("/observation-stars", putObservationStar)
 	}
 }
 
@@ -128,9 +131,9 @@ func updateOrderFields(c *gin.Context) {
 	delete(payload, "creator_id")
 	delete(payload, "moderator_id")
 	//delete(payload, "status")
-	delete(payload, "created_at")
-	delete(payload, "formation_date")
-	delete(payload, "completion_date")
+	//delete(payload, "created_at")
+	//delete(payload, "formation_date")
+	//delete(payload, "completion_date")
 
 	if err := db.Model(&models.Observation{}).
 		Where("observation_id = ?", id).
@@ -279,4 +282,69 @@ func deleteOrder(c *gin.Context) {
 		"message": "Заявка помечена как удалённая",
 		"orderID": id,
 	})
+}
+
+// удаление услуги из заявки
+func deleteObservationStar(c *gin.Context) {
+	obsStr := c.Query("observation_id")
+	starStr := c.Query("star_id")
+	obsID, err := strconv.Atoi(obsStr)
+	if err != nil || starStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "обязательно observation_id и star_id"})
+		return
+	}
+	starID, _ := strconv.Atoi(starStr)
+
+	if err := repo.DeleteObservationStar(obsID, starID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка удаления записи: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Услуга удалена из заявки"})
+}
+
+// PUT /api/orders/observation-stars
+// Body JSON: { "observation_id":1, "star_id":2, "quantity":3, "order_number":1, "result_value":12.34 }
+func putObservationStar(c *gin.Context) {
+	var req map[string]interface{}
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный JSON: " + err.Error()})
+		return
+	}
+	oi, ok1 := req["observation_id"]
+	si, ok2 := req["star_id"]
+	if !ok1 || !ok2 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Нужны observation_id и star_id"})
+		return
+	}
+	obsID := int(int64(oi.(float64))) // JSON numbers -> float64
+	starID := int(int64(si.(float64)))
+
+	// Удаляем ключи, которые не относятcя к полям м-м
+	delete(req, "observation_id")
+	delete(req, "star_id")
+
+	// Разрешённые поля: order_number, quantity, result_value, observer_latitude, observer_longitude
+	allowed := map[string]bool{
+		"order_number":       true,
+		"quantity":           true,
+		"result_value":       true,
+		"observer_latitude":  true,
+		"observer_longitude": true,
+	}
+	updates := map[string]interface{}{}
+	for k, v := range req {
+		if allowed[k] {
+			updates[k] = v
+		}
+	}
+	if len(updates) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Нет полей для обновления"})
+		return
+	}
+
+	if err := repo.UpdateObservationStar(obsID, starID, updates); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "М-М запись обновлена"})
 }

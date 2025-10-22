@@ -1,8 +1,6 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -15,10 +13,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		c.Next()
 	})
 
-	api.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "pong"})
-	})
+	//api.GET("/ping", func(c *gin.Context) {
+	//	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	//})
 
 	InitStarAPI(db, api)
 	InitOrderAPI(db, api)
+	InitUserAPI(db, api)
 }

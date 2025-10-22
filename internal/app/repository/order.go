@@ -117,3 +117,15 @@ func (r *Repository) UpdateObservationStarResult(observationID, starID int, resu
 		Where("observation_id = ? AND star_id = ?", observationID, starID).
 		Update("result_value", result).Error
 }
+
+// Удалить запись м-м по observation_id + star_id
+func (r *Repository) DeleteObservationStar(observationID, starID int) error {
+	return r.DB.Exec("DELETE FROM observation_stars WHERE observation_id = ? AND star_id = ?", observationID, starID).Error
+}
+
+// Обновить поля записи м-м (quantity, order_number, result_value, observer_latitude, observer_longitude)
+func (r *Repository) UpdateObservationStar(observationID, starID int, updates map[string]interface{}) error {
+	return r.DB.Model(&models.ObservationStar{}).
+		Where("observation_id = ? AND star_id = ?", observationID, starID).
+		Updates(updates).Error
+}
