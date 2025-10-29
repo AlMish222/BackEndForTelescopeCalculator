@@ -2,6 +2,9 @@ package repository
 
 import (
 	"Lab1/internal/app/models"
+	"time"
+
+	"gorm.io/gorm"
 )
 
 // Получение всех заявок (observations)
@@ -67,18 +70,16 @@ func (r *Repository) DeleteOrder(id int) error {
 // Получение или создание черновика
 func (r *Repository) GetOrCreateDraftOrder(userID int) (*models.Observation, error) {
 	var order models.Observation
-	err := r.DB.Where("creator_id = ? AND status = 'черновик'", userID).First(&order).Error
-	if err == nil {
-		return &order, nil
-	}
-
-	// если нет — создаём
-	order = models.Observation{
-		CreatorID: userID,
-		Status:    "черновик",
-	}
-	if err := r.DB.Create(&order).Error; err != nil {
-		return nil, err
+	err := r.DB.Where("creator_id = ? AND status = ?", userID, "черновик").First(&order).Error
+	if err == gorm.ErrRecordNotFound {
+		order = models.Observation{
+			CreatorID: userID,
+			Status:    "черновик",
+			CreatedAt: time.Now(),
+		}
+		if err := r.DB.Create(&order).Error; err != nil {
+			return nil, err
+		}
 	}
 	return &order, nil
 }
@@ -116,4 +117,16 @@ func (r *Repository) UpdateObservationStarResult(observationID, starID int, resu
 	return r.DB.Model(&models.ObservationStar{}).
 		Where("observation_id = ? AND star_id = ?", observationID, starID).
 		Update("result_value", result).Error
+}
+
+// Удалить запись м-м по observation_id + star_id
+func (r *Repository) DeleteObservationStar(observationID, starID int) error {
+	return r.DB.Exec("DELETE FROM observation_stars WHERE observation_id = ? AND star_id = ?", observationID, starID).Error
+}
+
+// Обновить поля записи м-м (quantity, order_number, result_value, observer_latitude, observer_longitude)
+func (r *Repository) UpdateObservationStar(observationID, starID int, updates map[string]interface{}) error {
+	return r.DB.Model(&models.ObservationStar{}).
+		Where("observation_id = ? AND star_id = ?", observationID, starID).
+		Updates(updates).Error
 }
