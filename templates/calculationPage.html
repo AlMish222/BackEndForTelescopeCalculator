@@ -1,0 +1,50 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab1 - {{ .order.Title }}</title>
+    <link rel="stylesheet" href="/static/styles/calculationPage_style.css">
+</head>
+<body>
+    <header>
+        <div class="page-title">Информация о звезде и поля для ввода данных</div>
+
+        <div class="header-buttons">
+            <div class="home-button-container">
+                <a href="/hello"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+            </div>
+
+            <div class="cart-button-container">
+                <a href="/cart/1">
+                    <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
+                    <span class="cart-count">{{ .cartCount }}</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="order-container">
+        <h1>Информация о Звезде №{{ .order.ID }}</h1>
+        <img src="{{ .order.ImageURL }}" alt="{{ .order.Title }}" class="order-image">
+        <h2>Название: {{ .order.Title }}</h2>
+
+<!--        <div class="coordinates-container">-->
+<!--            <div class="coordinate-block">-->
+<!--                <span>Координата 1: {{ .order.CoordStar1 }}</span>-->
+<!--            </div>-->
+<!--            <div class="coordinate-block">-->
+<!--                <span>Координата 2: {{ .order.CoordStar2 }}</span>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <p class="description"><strong>Описание:</strong> {{ .order.Description }}</p>
+<!--        <p class="price"><strong>Цена:</strong> {{ .order.Price }} ₽</p>-->
+
+        <div class="buttons-container">
+            <a href="/hello" class="back-button">← Назад к списку</a>
+            <a class="add-to-cart-button">Добавить в корзину</a>
+        </div>
+    </div>
+</body>
+</html>
+
+
