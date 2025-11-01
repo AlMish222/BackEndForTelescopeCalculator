@@ -212,18 +212,18 @@ func addStarToDraftOrder(c *gin.Context) {
 	}
 
 	// Проверяем, не добавлена ли уже звезда
-	var existing models.ObservationStar
-	if err := db.Where("observation_id = ? AND star_id = ?", order.ObservationID, starID).First(&existing).Error; err == nil {
+	var existing models.TelescopeObservationStar
+	if err := db.Where("observation_id = ? AND star_id = ?", order.TelescopeObservationID, starID).First(&existing).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Звезда уже добавлена в заявку"})
 		return
 	}
 
 	// Добавляем новую запись
-	relation := models.ObservationStar{
-		ObservationID: order.ObservationID,
-		StarID:        starID,
-		OrderNumber:   1,
-		Quantity:      1,
+	relation := models.TelescopeObservationStar{
+		TelescopeObservationID: order.TelescopeObservationID,
+		StarID:                 starID,
+		OrderNumber:            1,
+		Quantity:               1,
 	}
 
 	if err := db.Create(&relation).Error; err != nil {
@@ -233,6 +233,6 @@ func addStarToDraftOrder(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Звезда успешно добавлена в черновик заявки",
-		"orderID": order.ObservationID,
+		"orderID": order.TelescopeObservationID,
 	})
 }

@@ -3,17 +3,20 @@ package handler
 import (
 	"Lab1/internal/app/auth"
 	"Lab1/internal/app/models"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 // Добавление звезды в корзину со статусом "черновик"
 func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	starIDStr := ctx.Param("id")
 	userID := auth.CurrentUserID()
+
 	starID, err := strconv.Atoi(starIDStr)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "Некорректный ID звезды")
@@ -29,30 +32,60 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	}
 
 	// Проверяем, не добавлена ли звезда уже
-	var existing models.ObservationStar
+	var existing models.TelescopeObservationStar
 	err = h.Repository.DB.
-		Where("observation_id = ? AND star_id = ?", order.ObservationID, starID).
+		Where("telescope_observation_id = ? AND star_id = ?", order.TelescopeObservationID, starID).
 		First(&existing).Error
 
 	if err == nil {
-		// Звезда уже есть в заказе
+		// Есть такая звезда в заказе — увеличиваем количество
+		existing.Quantity += 1
+		if saveErr := h.Repository.DB.Save(&existing).Error; saveErr != nil {
+			logrus.Error("Ошибка при обновлении количества звезды в корзине: ", saveErr)
+			ctx.String(http.StatusInternalServerError, "Ошибка при обновлении количества")
+			return
+		}
+
+		var cartCount int64
+		if countErr := h.Repository.DB.Model(&models.TelescopeObservationStar{}).
+			Where("telescope_observation_id = ?", order.TelescopeObservationID).
+			Count(&cartCount).Error; countErr != nil {
+			logrus.Error("Ошибка пересчёта корзины: ", countErr)
+		}
+
+		ctx.Redirect(http.StatusFound, "/stars")
+		return
+	}
+
+	// Добавляем новую связь
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		relation := models.TelescopeObservationStar{
+			TelescopeObservationID: order.TelescopeObservationID,
+			StarID:                 starID,
+			OrderNumber:            1,
+			Quantity:               1,
+		}
+
+		if createErr := h.Repository.DB.Create(&relation).Error; createErr != nil {
+			logrus.Error("Ошибка добавления звезды в корзину: ", createErr)
+			ctx.String(http.StatusInternalServerError, "Ошибка добавления звезды в корзину")
+			return
+		}
+
+		var cartCount int64
+		if countErr := h.Repository.DB.Model(&models.TelescopeObservationStar{}).
+			Where("telescope_observation_id = ?", order.TelescopeObservationID).
+			Count(&cartCount).Error; countErr != nil {
+			logrus.Error("Ошибка пересчёта корзины: ", countErr)
+		}
+
 		ctx.Redirect(http.StatusSeeOther, "/stars")
 		return
 	}
-	// Добавляем новую связь
-	relation := models.ObservationStar{
-		ObservationID: order.ObservationID,
-		StarID:        starID,
-		OrderNumber:   1,
-		Quantity:      1,
-	}
-	if err := h.Repository.DB.Create(&relation).Error; err != nil {
-		logrus.Error("Ошибка добавления звезды в корзину: ", err)
-		ctx.String(http.StatusInternalServerError, "Ошибка добавления звезды в корзину")
-		return
-	}
-	// Возвращаем обратно на страницу звёзд (без редиректа на заявку)
-	ctx.Redirect(http.StatusSeeOther, "/stars")
+
+	// Любая другая ошибка
+	logrus.Error("Ошибка проверки звезды в корзине: ", err)
+	ctx.String(http.StatusInternalServerError, "Ошибка при проверке звезды в корзине")
 }
 
 func (h *Handler) GetStars(ctx *gin.Context) {
