@@ -26,7 +26,7 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 		orders.GET("", getAllOrders)
 		orders.GET("/:id", getOrderByID)
 		orders.PUT("/:id", updateOrderFields)
-		orders.PUT("/:id/submit", submitOrder) // ✅ сформировать
+		orders.PUT("/:id/submit", submitOrder)
 		orders.PUT("/:id/complete", completeOrder)
 		orders.DELETE("/:id", deleteOrder)
 
@@ -77,9 +77,9 @@ func getAllOrders(c *gin.Context) {
 
 	if status != "" {
 		query = query.Where("status = ?", status)
+	} else {
+		query = query.Where("status != ?", "удалён")
 	}
-
-	query = query.Where("status != ?", "удалён")
 
 	if err := query.Find(&orders).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения заявок: " + err.Error()})
@@ -283,7 +283,7 @@ func deleteObservationStar(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Услуга удалена из заявки"})
 }
 
-// PUT /api/orders/observation-stars
+// PUT /api/orders/telescope-observation-stars
 // Body JSON: { "observation_id":1, "star_id":2, "quantity":3, "order_number":1, "result_value":12.34 }
 func putObservationStar(c *gin.Context) {
 	var req map[string]interface{}

@@ -33,17 +33,26 @@ func registerStarRoutes(r *gin.RouterGroup) {
 
 		stars.PUT("/:id", updateStar)
 		stars.DELETE("/:id", deleteStar)
-		stars.POST("/:id/image", uploadStarImage) //реализую позже
+		stars.POST("/:id/image", uploadStarImage)
 		stars.POST("/:id/add", addStarToDraftOrder)
 	}
 }
 
 func getStars(c *gin.Context) {
 	var stars []models.Star
-	if err := db.Find(&stars).Error; err != nil {
+
+	starName := c.Query("star_name")
+	query := db.Model(&models.Star{})
+
+	if starName != "" {
+		query = query.Where("star_name ILIKE ?", "%"+starName+"%")
+	}
+
+	if err := query.Find(&stars).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения звёзд: " + err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, stars)
 }
 
@@ -196,30 +205,33 @@ func uploadStarImage(c *gin.Context) {
 
 func addStarToDraftOrder(c *gin.Context) {
 	userID := auth.CurrentUserID()
-	starIDStr := c.Param("id")
-
-	starID, err := strconv.Atoi(starIDStr)
+	starID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID звезды"})
 		return
 	}
 
-	// Получаем или создаём черновик
 	order, err := repo.GetOrCreateDraftOrder(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения или создания черновика: " + err.Error()})
 		return
 	}
 
-	// Проверяем, не добавлена ли уже звезда
-	var existing models.TelescopeObservationStar
-	if err := db.Where("observation_id = ? AND star_id = ?", order.TelescopeObservationID, starID).First(&existing).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Звезда уже добавлена в заявку"})
+	var relation models.TelescopeObservationStar
+	err = db.Where("telescope_observation_id = ? AND star_id = ?", order.TelescopeObservationID, starID).
+		First(&relation).Error
+
+	if err == nil {
+		relation.Quantity += 1
+		if err := db.Save(&relation).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления количества: " + err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Количество звезды увеличено"})
 		return
 	}
 
-	// Добавляем новую запись
-	relation := models.TelescopeObservationStar{
+	relation = models.TelescopeObservationStar{
 		TelescopeObservationID: order.TelescopeObservationID,
 		StarID:                 starID,
 		OrderNumber:            1,
@@ -231,8 +243,5 @@ func addStarToDraftOrder(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Звезда успешно добавлена в черновик заявки",
-		"orderID": order.TelescopeObservationID,
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Звезда успешно добавлена в черновик заявки"})
 }
