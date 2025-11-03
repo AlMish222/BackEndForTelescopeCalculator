@@ -8,11 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
 	Repository  *repository.Repository
 	MinioClient *minio.Client
+	RedisClient *redis.Client
 }
 
 func NewHandler(r *repository.Repository) *Handler {
@@ -32,7 +34,7 @@ func (h *Handler) RegisterHandler(rou *gin.Engine) {
 
 	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
 
-	api.RegisterRoutes(rou, h.Repository.DB)
+	api.RegisterRoutes(rou, h.Repository)
 }
 
 func (h *Handler) RegisterStatic(rou *gin.Engine) {

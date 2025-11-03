@@ -108,7 +108,7 @@ func (h *Handler) GetStars(ctx *gin.Context) {
 		return
 	}
 
-	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
+	hasDraft, draftID, cartCount, err := h.Repository.GetObservationInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)
 	}
@@ -143,7 +143,7 @@ func (h *Handler) GetStarByID(ctx *gin.Context) {
 
 	// Получаем данные корзины (черновик + количество элементов)
 	userID := auth.CurrentUserID()
-	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
+	hasDraft, draftID, cartCount, err := h.Repository.GetObservationInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)
 	}

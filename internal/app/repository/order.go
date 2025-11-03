@@ -93,7 +93,7 @@ func (r *Repository) GetOrCreateDraftOrder(userID int) (*models.TelescopeObserva
 	return &order, nil
 }
 
-func (r *Repository) GetCartInfo(userID int) (hasDraft bool, draftID int, cartCount int64, err error) {
+func (r *Repository) GetObservationInfo(userID int) (hasDraft bool, draftID int, cartCount int64, err error) {
 	var draft models.TelescopeObservation
 	err = r.DB.Where("creator_id = ? AND status = 'черновик'", userID).First(&draft).Error
 	if err != nil {
