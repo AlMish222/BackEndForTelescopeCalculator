@@ -15,7 +15,7 @@
 //
 // @host 127.0.0.1:9005
 // @BasePath /api
-// @schemes http
+//// @schemes http
 //
 // @securityDefinitions.apikey SessionAuth
 // @type apiKey
@@ -35,9 +35,8 @@ import (
 
 	_ "Lab1/cmd/docs"
 
-	"github.com/gin-gonic/gin"
-	//"github.com/minio/minio-go/v7/pkg/cors"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 )

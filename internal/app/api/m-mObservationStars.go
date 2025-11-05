@@ -18,7 +18,7 @@ func InitMMObservationStarsAPI(r *gin.RouterGroup, repo *repository.Repository) 
 
 // @Summary Удалить услугу из заявки
 // @Description Удаляет связь звезды с наблюдением (услугу)
-// @Tags observation-stars
+// @Tags TelescopeObservationStars
 // @Produce json
 // @Param telescope_observation_id query int true "ID заявки"
 // @Param star_id query int true "ID звезды"
@@ -46,7 +46,7 @@ func deleteObservationStar(c *gin.Context, repo *repository.Repository) {
 
 // / @Summary Обновить услугу заявки
 // @Description Обновляет поля услуги в заявке (order_number, quantity, result_value)
-// @Tags observation-stars
+// @Tags TelescopeObservationStars
 // @Accept json
 // @Produce json
 // @Param input body map[string]interface{} true "Поля для обновления"

@@ -32,15 +32,12 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 
 		orders.PUT("/:id/complete", middleware.RequireModerator(), completeTelescopeObservation)
 		orders.DELETE("/:id", middleware.RequireModerator(), deleteTelescopeObservation)
-
-		//orders.DELETE("/telescope-observation-stars", deleteObservationStar)
-		//orders.PUT("/telescope-observation-stars", putObservationStar)
 	}
 }
 
 // @Summary Получить информацию о корзине пользователя
 // @Description Возвращает черновик заявки и количество услуг в нём
-// @Tags orders
+// @Tags TelescopeObservations
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Failure 500 {object} map[string]string
@@ -71,7 +68,7 @@ func getTelescopeObservationInfo(c *gin.Context) {
 
 // @Summary Получить все заявки
 // @Description Возвращает список всех заявок (с фильтрацией по дате и статусу)
-// @Tags orders
+// @Tags TelescopeObservations
 // @Produce json
 // @Param from query string false "Дата начала (YYYY-MM-DD)"
 // @Param to query string false "Дата конца (YYYY-MM-DD)"
@@ -113,7 +110,7 @@ func getAllTelescopeObservations(c *gin.Context) {
 
 // @Summary Получить заявку по ID
 // @Description Возвращает данные конкретной заявки со связанными звёздами и пользователями
-// @Tags orders
+// @Tags TelescopeObservations
 // @Produce json
 // @Param id path int true "ID заявки"
 // @Success 200 {object} models.TelescopeObservation
@@ -144,7 +141,7 @@ func getTelescopeObservationByID(c *gin.Context) {
 
 // @Summary Обновить поля заявки
 // @Description Обновляет произвольные поля заявки (кроме ID и связей)
-// @Tags orders
+// @Tags TelescopeObservations
 // @Accept json
 // @Produce json
 // @Param id path int true "ID заявки"
@@ -184,7 +181,7 @@ func updateTelescopeObservationFields(c *gin.Context) {
 
 // @Summary Сформировать заявку
 // @Description Переводит заявку из состояния 'черновик' в 'сформирован'
-// @Tags orders
+// @Tags TelescopeObservations
 // @Produce json
 // @Param id path int true "ID заявки"
 // @Success 200 {object} map[string]interface{}
@@ -232,7 +229,7 @@ func submitTelescopeObservation(c *gin.Context) {
 
 // @Summary Завершить или отклонить заявку
 // @Description Доступно только модератору. Завершает или отклоняет сформированную заявку
-// @Tags orders
+// @Tags TelescopeObservations
 // @Accept json
 // @Produce json
 // @Param id path int true "ID заявки"
@@ -317,7 +314,7 @@ func completeTelescopeObservation(c *gin.Context) {
 
 // @Summary Удалить заявку
 // @Description Доступно только модератору. Помечает заявку как удалённую
-// @Tags orders
+// @Tags TelescopeObservations
 // @Produce json
 // @Param id path int true "ID заявки"
 // @Success 200 {object} map[string]string
@@ -340,87 +337,3 @@ func deleteTelescopeObservation(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Заявка помечена как удалённая"})
 }
-
-// -------- M - M --------
-//
-//// @Summary Удалить услугу из заявки
-//// @Description Удаляет связь звезды с наблюдением (услугу)
-//// @Tags orders
-//// @Produce json
-//// @Param telescope_observation_id query int true "ID заявки"
-//// @Param star_id query int true "ID звезды"
-//// @Success 200 {object} map[string]string
-//// @Failure 400 {object} map[string]string
-//// @Failure 500 {object} map[string]string
-//// @Router /orders/telescope-observation-stars [delete]
-//// @Security BearerAuth
-//func deleteObservationStar(c *gin.Context) {
-//	obsStr := c.Query("telescope_observation_id")
-//	starStr := c.Query("star_id")
-//	obsID, err := strconv.Atoi(obsStr)
-//	if err != nil || starStr == "" {
-//		c.JSON(http.StatusBadRequest, gin.H{"error": "нужны telescope_observation_id и star_id"})
-//		return
-//	}
-//	starID, _ := strconv.Atoi(starStr)
-//
-//	if err := repo.DeleteObservationStar(obsID, starID); err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка удаления: " + err.Error()})
-//		return
-//	}
-//	c.JSON(http.StatusOK, gin.H{"message": "Услуга удалена из заявки"})
-//}
-//
-//// @Summary Обновить услугу заявки
-//// @Description Обновляет поля услуги в заявке (order_number, quantity, result_value)
-//// @Tags orders
-//// @Accept json
-//// @Produce json
-//// @Param input body map[string]interface{} true "Поля для обновления"
-//// @Success 200 {object} map[string]string
-//// @Failure 400 {object} map[string]string
-//// @Failure 500 {object} map[string]string
-//// @Router /orders/telescope-observation-stars [put]
-//// @Security BearerAuth
-//func putObservationStar(c *gin.Context) {
-//	var req map[string]interface{}
-//	if err := c.BindJSON(&req); err != nil {
-//		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный JSON: " + err.Error()})
-//		return
-//	}
-//	oi, ok1 := req["telescope_observation_id"]
-//	si, ok2 := req["star_id"]
-//	if !ok1 || !ok2 {
-//		c.JSON(http.StatusBadRequest, gin.H{"error": "Нужны telescope_observation_id и star_id"})
-//		return
-//	}
-//	obsID := int(int64(oi.(float64)))
-//	starID := int(int64(si.(float64)))
-//
-//	delete(req, "telescope_observation_id")
-//	delete(req, "star_id")
-//
-//	allowed := map[string]bool{
-//		"order_number": true,
-//		"quantity":     true,
-//		"result_value": true,
-//	}
-//
-//	updates := map[string]interface{}{}
-//	for k, v := range req {
-//		if allowed[k] {
-//			updates[k] = v
-//		}
-//	}
-//
-//	if len(updates) == 0 {
-//		c.JSON(http.StatusBadRequest, gin.H{"error": "Нет полей для обновления"})
-//		return
-//	}
-//
-//	if err := repo.UpdateObservationStar(obsID, starID, updates); err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления: " + err.Error()})
-//		return
-//	}
-//	c.JSON(http.StatusOK, gin.H{"message": "М-М запись обновлена"})
-//}
