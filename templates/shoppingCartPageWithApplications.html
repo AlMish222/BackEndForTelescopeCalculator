@@ -28,9 +28,9 @@
                 <h3 class="item-title">{{ .Star.StarName }}</h3>
                 <p class="item-description">{{ .Star.ShortDescription }}</p>
 
-                <div class="item-actions">
-                    <a href="/stars/{{ .Star.StarID }}" class="details-button">Подробнее</a>
-                </div>
+{{/*                <div class="item-actions">*/}}
+{{/*                    <a href="/stars/{{ .Star.StarID }}" class="details-button">Подробнее</a>*/}}
+{{/*                </div>*/}}
 
                 {{ if gt .Quantity 0 }}
                 <div class="quantity-controls">
