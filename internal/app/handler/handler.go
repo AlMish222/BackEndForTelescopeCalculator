@@ -1,14 +1,20 @@
+//goland:noinspection ALL
 package handler
 
 import (
+	"Lab1/internal/app/api"
 	"Lab1/internal/app/repository"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
-	Repository *repository.Repository
+	Repository  *repository.Repository
+	MinioClient *minio.Client
+	RedisClient *redis.Client
 }
 
 func NewHandler(r *repository.Repository) *Handler {
@@ -27,6 +33,8 @@ func (h *Handler) RegisterHandler(rou *gin.Engine) {
 	rou.POST("/order/:id/update", h.UpdateOrder)
 
 	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
+
+	api.RegisterRoutes(rou, h.Repository)
 }
 
 func (h *Handler) RegisterStatic(rou *gin.Engine) {

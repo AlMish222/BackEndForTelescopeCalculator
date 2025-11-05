@@ -14,7 +14,7 @@ import (
 
 // Получение списка заявок
 func (h *Handler) GetOrders(ctx *gin.Context) {
-	var orders []models.Observation
+	var orders []models.TelescopeObservation
 	var err error
 
 	// query параметр — фильтр по статусу
@@ -53,10 +53,10 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 		return
 	}
 
-	// Загружаем заявку с привязкой звёзд через ObservationStars
-	var order models.Observation
+	// Загружаем заявку с привязкой звёзд через TelescopeObservationStars
+	var order models.TelescopeObservation
 	err = h.Repository.DB.
-		Preload("ObservationStars.Star").
+		Preload("TelescopeObservationStars.Star").
 		Preload("Creator").
 		Preload("Moderator").
 		First(&order, id).Error
@@ -78,7 +78,7 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 
 // Создание новой заявки (черновик)
 func (h *Handler) CreateOrder(ctx *gin.Context) {
-	var newOrder models.Observation
+	var newOrder models.TelescopeObservation
 
 	if err := ctx.ShouldBind(&newOrder); err != nil {
 		ctx.String(http.StatusBadRequest, "Ошибка данных формы")
@@ -169,9 +169,9 @@ func (h *Handler) CompleteOrder(ctx *gin.Context) {
 	}
 
 	// вычисляем результат для каждой звезды
-	for _, obsStar := range order.ObservationStars {
+	for _, obsStar := range order.TelescopeObservationStars {
 		result := h.calculateResult(&obsStar, obsStar.Star)
-		err := h.Repository.UpdateObservationStarResult(order.ObservationID, obsStar.Star.StarID, result)
+		err := h.Repository.UpdateObservationStarResult(order.TelescopeObservationID, obsStar.Star.StarID, result)
 		if err != nil {
 			ctx.String(http.StatusInternalServerError, "Ошибка сохранения результата")
 			return
@@ -188,13 +188,17 @@ func (h *Handler) CompleteOrder(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/order/%d", order.ObservationID))
+	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/order/%d", order.TelescopeObservationID))
 }
 
-func (h *Handler) calculateResult(obsStar *models.ObservationStar, star models.Star) float64 {
+func (h *Handler) calculateResult(obsStar *models.TelescopeObservationStar, star models.Star) float64 {
+	// Берем широту и долготу из родительской заявки
+	obs := obsStar.TelescopeObservation
+	delta := math.Abs(obs.ObserverLatitude - obs.ObserverLongitude)
+
 	// Пример формулы:
 	// "Результат" = √(RA² + Dec²) * (1 + |широта - долгота| / 180)
-	delta := math.Abs(obsStar.ObserverLatitude - obsStar.ObserverLongitude)
 	value := math.Sqrt(math.Pow(star.RA, 2)+math.Pow(star.Dec, 2)) * (1 + delta/180)
-	return math.Round(value*100) / 100 // округляем
+
+	return math.Round(value*100) / 100 // округляем до сотых
 }
