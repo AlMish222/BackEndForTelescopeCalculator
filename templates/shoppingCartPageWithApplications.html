@@ -12,12 +12,12 @@
     <div class="page-title">Список звёзд для расчёта</div>
 </header>
 
-<div class="cart-container" id="cart-{{ .order.TelescopeObservationID }}">
+<div class="cart-container" id="cart-{{ .telescopeObservation.TelescopeObservationID }}">
     <h1>Ваша корзина</h1>
 
-    {{ if .order.TelescopeObservationStars }}
+    {{ if .telescopeObservation.TelescopeObservationStars }}
     <div class="cart-items">
-        {{ range .order.TelescopeObservationStars }}
+        {{ range .telescopeObservation.TelescopeObservationStars }}
         <div class="cart-item">
             <div class="item-image-container">
                 <div class="item-image-background"></div>
@@ -27,10 +27,6 @@
             <div class="item-info">
                 <h3 class="item-title">{{ .Star.StarName }}</h3>
                 <p class="item-description">{{ .Star.ShortDescription }}</p>
-
-{{/*                <div class="item-actions">*/}}
-{{/*                    <a href="/stars/{{ .Star.StarID }}" class="details-button">Подробнее</a>*/}}
-{{/*                </div>*/}}
 
                 {{ if gt .Quantity 0 }}
                 <div class="quantity-controls">
@@ -70,20 +66,12 @@
 </div>
 
 <div class="cart-footer-left">
-    <form method="post" action="/order/{{ .order.TelescopeObservationID }}/delete" style="display:inline;">
+    <form method="post" action="/telescopeObservation/{{ .telescopeObservation.TelescopeObservationID }}/delete" style="display:inline;">
         <button type="submit" class="footer-button delete-order"
                 onclick="return confirm('Вы уверены, что хотите удалить эту корзину?');">
             Удалить корзину
         </button>
     </form>
 </div>
-
-<!--<div class="cart-footer-left">-->
-<!--    <div class="footer-buttons">-->
-<!--        <button class="footer-button clear-basket">Очистить корзину</button>-->
-<!--        <button class="footer-button save-basket">Сохранить заказ</button>-->
-<!--        <button class="footer-button checkout">Оформить заказ</button>-->
-<!--    </div>-->
-<!--</div>-->
 </body>
 </html>

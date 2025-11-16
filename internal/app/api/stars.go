@@ -290,7 +290,7 @@ func addStarToDraftOrder(c *gin.Context) {
 		return
 	}
 
-	order, err := repo.GetOrCreateDraftOrder(userID)
+	order, err := repo.GetOrCreateDraftTelescopeObservation(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения или создания черновика: " + err.Error()})
 		return

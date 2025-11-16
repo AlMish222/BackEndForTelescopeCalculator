@@ -100,254 +100,6 @@ info:
   title: Calculator Observations Stars API
   version: "1.0"
 paths:
-  /orders:
-    get:
-      description: Возвращает список всех заявок (с фильтрацией по дате и статусу)
-      parameters:
-      - description: Дата начала (YYYY-MM-DD)
-        in: query
-        name: from
-        type: string
-      - description: Дата конца (YYYY-MM-DD)
-        in: query
-        name: to
-        type: string
-      - description: Статус заявки
-        in: query
-        name: status
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.TelescopeObservation'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Получить все заявки
-      tags:
-      - TelescopeObservations
-  /orders/{id}:
-    delete:
-      description: Доступно только модератору. Помечает заявку как удалённую
-      parameters:
-      - description: ID заявки
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Удалить заявку
-      tags:
-      - TelescopeObservations
-    get:
-      description: Возвращает данные конкретной заявки со связанными звёздами и пользователями
-      parameters:
-      - description: ID заявки
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.TelescopeObservation'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Получить заявку по ID
-      tags:
-      - TelescopeObservations
-    put:
-      consumes:
-      - application/json
-      description: Обновляет произвольные поля заявки (кроме ID и связей)
-      parameters:
-      - description: ID заявки
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Поля для обновления
-        in: body
-        name: input
-        required: true
-        schema:
-          additionalProperties: true
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Обновить поля заявки
-      tags:
-      - TelescopeObservations
-  /orders/{id}/complete:
-    put:
-      consumes:
-      - application/json
-      description: Доступно только модератору. Завершает или отклоняет сформированную
-        заявку
-      parameters:
-      - description: ID заявки
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Действие (action=reject или complete)
-        in: body
-        name: input
-        required: true
-        schema:
-          additionalProperties:
-            type: string
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Завершить или отклонить заявку
-      tags:
-      - TelescopeObservations
-  /orders/{id}/submit:
-    put:
-      description: Переводит заявку из состояния 'черновик' в 'сформирован'
-      parameters:
-      - description: ID заявки
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Сформировать заявку
-      tags:
-      - TelescopeObservations
-  /orders/cart:
-    get:
-      description: Возвращает черновик заявки и количество услуг в нём
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Получить информацию о корзине пользователя
-      tags:
-      - TelescopeObservations
   /stars:
     get:
       consumes:
@@ -676,6 +428,254 @@ paths:
       - BearerAuth: []
       tags:
       - TelescopeObservationStars
+  /telescopeObservation:
+    get:
+      description: Возвращает список всех заявок (с фильтрацией по дате и статусу)
+      parameters:
+      - description: Дата начала (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Дата конца (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      - description: Статус заявки
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TelescopeObservation'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить все заявки
+      tags:
+      - TelescopeObservations
+  /telescopeObservation/{id}:
+    delete:
+      description: Доступно только модератору. Помечает заявку как удалённую
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить заявку
+      tags:
+      - TelescopeObservations
+    get:
+      description: Возвращает данные конкретной заявки со связанными звёздами и пользователями
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TelescopeObservation'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить заявку по ID
+      tags:
+      - TelescopeObservations
+    put:
+      consumes:
+      - application/json
+      description: Обновляет произвольные поля заявки (кроме ID и связей)
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: input
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить поля заявки
+      tags:
+      - TelescopeObservations
+  /telescopeObservation/{id}/complete:
+    put:
+      consumes:
+      - application/json
+      description: Доступно только модератору. Завершает или отклоняет сформированную
+        заявку
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Действие (action=reject или complete)
+        in: body
+        name: input
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Завершить или отклонить заявку
+      tags:
+      - TelescopeObservations
+  /telescopeObservation/{id}/submit:
+    put:
+      description: Переводит заявку из состояния 'черновик' в 'сформирован'
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Сформировать заявку
+      tags:
+      - TelescopeObservations
+  /telescopeObservation/cart:
+    get:
+      description: Возвращает черновик заявки и количество услуг в нём
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить информацию о корзине пользователя
+      tags:
+      - TelescopeObservations
   /users/login:
     post:
       consumes:

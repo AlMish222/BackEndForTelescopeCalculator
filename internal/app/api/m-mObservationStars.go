@@ -37,7 +37,7 @@ func deleteObservationStar(c *gin.Context, repo *repository.Repository) {
 	}
 	starID, _ := strconv.Atoi(starStr)
 
-	if err := repo.DeleteObservationStar(obsID, starID); err != nil {
+	if err := repo.DeleteTelescopeObservationStar(obsID, starID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка удаления: " + err.Error()})
 		return
 	}
@@ -93,7 +93,7 @@ func putObservationStar(c *gin.Context, repo *repository.Repository) {
 		return
 	}
 
-	if err := repo.UpdateObservationStar(obsID, starID, updates); err != nil {
+	if err := repo.UpdateTelescopeObservationStar(obsID, starID, updates); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления: " + err.Error()})
 		return
 	}

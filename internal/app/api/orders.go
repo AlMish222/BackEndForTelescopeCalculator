@@ -21,17 +21,17 @@ func InitOrderAPI(database *gorm.DB, r *gin.RouterGroup) {
 }
 
 func registerOrderRoutes(r *gin.RouterGroup) {
-	orders := r.Group("/orders")
-	orders.Use(middleware.AuthMiddleware())
+	telescopeObservation := r.Group("/telescopeObservations")
+	telescopeObservation.Use(middleware.AuthMiddleware())
 	{
-		orders.GET("/cart", getTelescopeObservationInfo)
-		orders.GET("", getAllTelescopeObservations)
-		orders.GET("/:id", getTelescopeObservationByID)
-		orders.PUT("/:id", updateTelescopeObservationFields)
-		orders.PUT("/:id/submit", submitTelescopeObservation)
+		telescopeObservation.GET("/cart", getTelescopeObservationInfo)
+		telescopeObservation.GET("", getAllTelescopeObservations)
+		telescopeObservation.GET("/:id", getTelescopeObservationByID)
+		telescopeObservation.PUT("/:id", updateTelescopeObservationFields)
+		telescopeObservation.PUT("/:id/submit", submitTelescopeObservation)
 
-		orders.PUT("/:id/complete", middleware.RequireModerator(), completeTelescopeObservation)
-		orders.DELETE("/:id", middleware.RequireModerator(), deleteTelescopeObservation)
+		telescopeObservation.PUT("/:id/complete", middleware.RequireModerator(), completeTelescopeObservation)
+		telescopeObservation.DELETE("/:id", middleware.RequireModerator(), deleteTelescopeObservation)
 	}
 }
 
@@ -41,12 +41,12 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Failure 500 {object} map[string]string
-// @Router /orders/cart [get]
+// @Router /telescopeObservation/cart [get]
 // @Security BearerAuth
 func getTelescopeObservationInfo(c *gin.Context) {
 	userID := auth.CurrentUserID()
 
-	order, err := repo.GetOrCreateDraftOrder(userID)
+	order, err := repo.GetOrCreateDraftTelescopeObservation(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при получении черновика: " + err.Error()})
 		return
@@ -75,7 +75,7 @@ func getTelescopeObservationInfo(c *gin.Context) {
 // @Param status query string false "Статус заявки"
 // @Success 200 {array} models.TelescopeObservation
 // @Failure 500 {object} map[string]string
-// @Router /orders [get]
+// @Router /telescopeObservation [get]
 // @Security BearerAuth
 func getAllTelescopeObservations(c *gin.Context) {
 	var orders []models.TelescopeObservation
@@ -116,7 +116,7 @@ func getAllTelescopeObservations(c *gin.Context) {
 // @Success 200 {object} models.TelescopeObservation
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /orders/{id} [get]
+// @Router /telescopeObservation/{id} [get]
 // @Security BearerAuth
 func getTelescopeObservationByID(c *gin.Context) {
 	idStr := c.Param("id")
@@ -149,7 +149,7 @@ func getTelescopeObservationByID(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /orders/{id} [put]
+// @Router /telescopeObservation/{id} [put]
 // @Security BearerAuth
 func updateTelescopeObservationFields(c *gin.Context) {
 	idStr := c.Param("id")
@@ -187,7 +187,7 @@ func updateTelescopeObservationFields(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /orders/{id}/submit [put]
+// @Router /telescopeObservation/{id}/submit [put]
 // @Security BearerAuth
 func submitTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")
@@ -197,7 +197,7 @@ func submitTelescopeObservation(c *gin.Context) {
 		return
 	}
 
-	order, err := repo.GetOrder(id)
+	order, err := repo.GetTelescopeObservation(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Заявка не найдена"})
 		return
@@ -216,7 +216,7 @@ func submitTelescopeObservation(c *gin.Context) {
 	order.Status = "сформирован"
 	order.FormationDate = &now
 
-	if err := repo.UpdateOrder(order); err != nil {
+	if err := repo.UpdateTelescopeObservation(order); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при формировании заявки: " + err.Error()})
 		return
 	}
@@ -237,7 +237,7 @@ func submitTelescopeObservation(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /orders/{id}/complete [put]
+// @Router /telescopeObservation/{id}/complete [put]
 // @Security BearerAuth
 func completeTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")
@@ -255,7 +255,7 @@ func completeTelescopeObservation(c *gin.Context) {
 		return
 	}
 
-	order, err := repo.GetOrder(id)
+	order, err := repo.GetTelescopeObservation(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Заявка не найдена"})
 		return
@@ -274,7 +274,7 @@ func completeTelescopeObservation(c *gin.Context) {
 		order.ModeratorID = &moderatorID
 		order.CompletionDate = &now
 
-		if err := repo.UpdateOrder(order); err != nil {
+		if err := repo.UpdateTelescopeObservation(order); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при отклонении: " + err.Error()})
 			return
 		}
@@ -294,7 +294,7 @@ func completeTelescopeObservation(c *gin.Context) {
 		value := math.Sqrt(math.Pow(s.Star.RA, 2) + math.Pow(s.Star.Dec, 2))
 		result := math.Round(value*100) / 100
 
-		if err := repo.UpdateObservationStarResult(id, s.StarID, result); err != nil {
+		if err := repo.UpdateTelescopeObservationStarResult(id, s.StarID, result); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сохранения результата: " + err.Error()})
 			return
 		}
@@ -304,7 +304,7 @@ func completeTelescopeObservation(c *gin.Context) {
 	order.ModeratorID = &moderatorID
 	order.CompletionDate = &now
 
-	if err := repo.UpdateOrder(order); err != nil {
+	if err := repo.UpdateTelescopeObservation(order); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при завершении заявки: " + err.Error()})
 		return
 	}
@@ -320,7 +320,7 @@ func completeTelescopeObservation(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /orders/{id} [delete]
+// @Router /telescopeObservation/{id} [delete]
 // @Security BearerAuth
 func deleteTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")
@@ -330,7 +330,7 @@ func deleteTelescopeObservation(c *gin.Context) {
 		return
 	}
 
-	if err := repo.DeleteOrder(id); err != nil {
+	if err := repo.DeleteTelescopeObservation(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при удалении заявки: " + err.Error()})
 		return
 	}
