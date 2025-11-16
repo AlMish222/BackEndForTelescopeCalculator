@@ -79,7 +79,9 @@ func getAllOrders(c *gin.Context) {
 		query = query.Where("status = ?", status)
 	}
 
-	query = query.Where("status != ?", "удалён")
+	if status == "" {
+		query = query.Where("status != ?", "удалён")
+	}
 
 	if err := query.Find(&orders).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения заявок: " + err.Error()})
@@ -127,6 +129,10 @@ func updateOrderFields(c *gin.Context) {
 	delete(payload, "telescope_observation_id")
 	delete(payload, "creator_id")
 	delete(payload, "moderator_id")
+	delete(payload, "status")
+	delete(payload, "created_at")
+	delete(payload, "formation_date")
+	delete(payload, "completion_date")
 
 	if err := db.Model(&models.TelescopeObservation{}).
 		Where("telescope_observation_id = ?", id).
@@ -139,6 +145,8 @@ func updateOrderFields(c *gin.Context) {
 }
 
 func submitOrder(c *gin.Context) {
+	userID := auth.CurrentUserID()
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -161,6 +169,11 @@ func submitOrder(c *gin.Context) {
 		return
 	}
 
+	if order.CreatorID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Только создатель может сформировать заявку"})
+		return
+	}
+
 	now := time.Now()
 	order.Status = "сформирован"
 	order.FormationDate = &now
@@ -177,6 +190,8 @@ func submitOrder(c *gin.Context) {
 }
 
 func completeOrder(c *gin.Context) {
+	userID := auth.CurrentUserID()
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -203,12 +218,16 @@ func completeOrder(c *gin.Context) {
 		return
 	}
 
-	moderatorID := 2
+	if order.CreatorID == userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Создатель не может выступать модератором для своей заявки"})
+		return
+	}
+
 	now := time.Now()
 
 	if req.Action == "reject" {
 		order.Status = "отклонён"
-		order.ModeratorID = &moderatorID
+		order.ModeratorID = &userID
 		order.CompletionDate = &now
 
 		if err := repo.UpdateOrder(order); err != nil {
@@ -238,7 +257,7 @@ func completeOrder(c *gin.Context) {
 	}
 
 	order.Status = "завершён"
-	order.ModeratorID = &moderatorID
+	order.ModeratorID = &userID
 	order.CompletionDate = &now
 
 	if err := repo.UpdateOrder(order); err != nil {

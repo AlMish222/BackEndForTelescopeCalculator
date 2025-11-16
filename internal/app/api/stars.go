@@ -33,7 +33,7 @@ func registerStarRoutes(r *gin.RouterGroup) {
 
 		stars.PUT("/:id", updateStar)
 		stars.DELETE("/:id", deleteStar)
-		stars.POST("/:id/image", uploadStarImage) //реализую позже
+		stars.POST("/:id/image", uploadStarImage)
 		stars.POST("/:id/add", addStarToDraftOrder)
 	}
 }

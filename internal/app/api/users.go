@@ -1,12 +1,12 @@
 package api
 
 import (
+	"Lab1/internal/app/auth"
 	"Lab1/internal/app/models"
 	"Lab1/internal/app/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,28 +22,30 @@ func InitUserAPI(database *gorm.DB, r *gin.RouterGroup) {
 func registerUserRoutes(r *gin.RouterGroup) {
 	users := r.Group("/users")
 	{
-		users.POST("/register", registerUser)                 // POST /api/users/register
-		users.POST("/login", loginUser)                       // POST /api/users/login
-		users.POST("/logout", logoutUser)                     // POST /api/users/logout
-		users.GET("/me", authMiddleware(), getCurrentUser)    // GET /api/users/me
-		users.PUT("/me", authMiddleware(), updateCurrentUser) // PUT /api/users/me
+		users.POST("/register", registerUser)
+		users.POST("/login", loginUser)
+		users.POST("/logout", logoutUser)
+		users.GET("/me", getCurrentUser)
+		users.PUT("/me", updateCurrentUser)
+		//users.GET("/me", authMiddleware(), getCurrentUser)
+		//users.PUT("/me", authMiddleware(), updateCurrentUser)
 	}
 }
 
-func authMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		auth := c.GetHeader("Authorization")
-		if len(auth) > 7 && auth[:7] == "Bearer " {
-			token := auth[7:]
-			if uid, ok := sessions[token]; ok {
-				c.Set("user_id", uid)
-				c.Next()
-				return
-			}
-		}
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-	}
-}
+//func authMiddleware() gin.HandlerFunc {
+//	return func(c *gin.Context) {
+//		auth := c.GetHeader("Authorization")
+//		if len(auth) > 7 && auth[:7] == "Bearer " {
+//			token := auth[7:]
+//			if uid, ok := sessions[token]; ok {
+//				c.Set("user_id", uid)
+//				c.Next()
+//				return
+//			}
+//		}
+//		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+//	}
+//}
 
 func registerUser(c *gin.Context) {
 	var req struct {
@@ -86,29 +88,32 @@ func loginUser(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
+	//token := uuid.NewString()
+	//sessions[token] = user.UserID
 
-	token := uuid.NewString()
-	sessions[token] = user.UserID
-
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"message": "login success (singleton user system)"})
 }
 
 func logoutUser(c *gin.Context) {
-	auth := c.GetHeader("Authorization")
-	if len(auth) > 7 && auth[:7] == "Bearer " {
-		token := auth[7:]
-		delete(sessions, token)
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
+	//auth := c.GetHeader("Authorization")
+	//if len(auth) > 7 && auth[:7] == "Bearer " {
+	//	token := auth[7:]
+	//	delete(sessions, token)
+	//}
+	//c.JSON(http.StatusOK, gin.H{"message": "logged out"})
+	c.JSON(http.StatusOK, gin.H{"message": "logout success (no session used)"})
+
 }
 
 func getCurrentUser(c *gin.Context) {
-	uid := c.GetInt("user_id")
+	uid := auth.CurrentUserID()
+
 	user, err := userRepo.GetUserByID(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"user_id":      user.UserID,
 		"username":     user.Username,
@@ -117,7 +122,7 @@ func getCurrentUser(c *gin.Context) {
 }
 
 func updateCurrentUser(c *gin.Context) {
-	uid := c.GetInt("user_id")
+	uid := auth.CurrentUserID()
 	var req map[string]interface{}
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
@@ -126,7 +131,7 @@ func updateCurrentUser(c *gin.Context) {
 
 	delete(req, "user_id")
 	delete(req, "is_moderator")
-	delete(req, "password_hash")
+	//delete(req, "password_hash")
 
 	if pw, ok := req["password"]; ok {
 		hash, _ := repository.HashPassword(pw.(string))
