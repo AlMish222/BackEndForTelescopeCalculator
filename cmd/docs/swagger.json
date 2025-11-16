@@ -1,0 +1,1286 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Система позволяет пользователям создавать заявки на получение данных для расчёта наведения телескопа,\nа модераторам — управлять этими заявками и добавлять новые звёзды.\n## 🔐 Аутентификация\n- Используются **сессии и cookie**, хранящиеся в **Redis**.\n- Без авторизации доступны только методы **чтения (GET)**.\n- Для авторизованных запросов браузер автоматически отправляет cookie.\n## 👥 Роли и права доступа\n- **Гость:** только GET-запросы.\n- **Пользователь:** управление своими заявками + чтение данных.\n- **Модератор:** полный доступ ко всем ресурсам.",
+        "title": "Calculator Observations Stars API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:9005",
+    "basePath": "/api",
+    "paths": {
+        "/stars": {
+            "get": {
+                "description": "Возвращает список звёзд, доступных для наблюдения. Можно указать фильтр по названию.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Получить список звёзд",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Фильтр по названию звезды",
+                        "name": "star_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Star"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения звёзд",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт новую запись звезды в базе данных",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Добавить новую звезду",
+                "parameters": [
+                    {
+                        "description": "Данные звезды",
+                        "name": "star",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Star"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Звезда успешно добавлена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный JSON или отсутствует название",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при сохранении",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/stars/{id}": {
+            "get": {
+                "description": "Возвращает информацию о конкретной звезде по её ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Получить звезду по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Star"
+                        }
+                    },
+                    "404": {
+                        "description": "Звезда не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновляет информацию о звезде по ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Обновить данные звезды",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Обновлённые данные звезды",
+                        "name": "star",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Star"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Звезда успешно обновлена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный запрос",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Звезда не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при обновлении",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет звезду по ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Удалить звезду",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Звезда успешно удалена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Звезда не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при удалении",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/stars/{id}/add": {
+            "post": {
+                "description": "Добавляет звезду в текущую заявку пользователя (черновик). Если уже есть — увеличивает количество.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Добавить звезду в черновик заявки",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Звезда успешно добавлена или количество увеличено",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при работе с заявкой",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/stars/{id}/image": {
+            "post": {
+                "description": "Загружает изображение звезды в MinIO и сохраняет путь в БД",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stars"
+                ],
+                "summary": "Загрузить изображение звезды",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Файл изображения",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Изображение успешно загружено",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный ID или файл",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при загрузке или сохранении",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescope-observation-stars": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Обновляет поля услуги в заявке (order_number, quantity, result_value)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservationStars"
+                ],
+                "parameters": [
+                    {
+                        "description": "Поля для обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаляет связь звезды с наблюдением (услугу)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservationStars"
+                ],
+                "summary": "Удалить услугу из заявки",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "telescope_observation_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID звезды",
+                        "name": "star_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescopeObservation": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает список всех заявок (с фильтрацией по дате и статусу)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Получить все заявки",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Дата начала (YYYY-MM-DD)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца (YYYY-MM-DD)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Статус заявки",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TelescopeObservation"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescopeObservation/cart": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает черновик заявки и количество услуг в нём",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Получить информацию о корзине пользователя",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescopeObservation/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает данные конкретной заявки со связанными звёздами и пользователями",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Получить заявку по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TelescopeObservation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Обновляет произвольные поля заявки (кроме ID и связей)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Обновить поля заявки",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Доступно только модератору. Помечает заявку как удалённую",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Удалить заявку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescopeObservation/{id}/complete": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Доступно только модератору. Завершает или отклоняет сформированную заявку",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Завершить или отклонить заявку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Действие (action=reject или complete)",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/telescopeObservation/{id}/submit": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Переводит заявку из состояния 'черновик' в 'сформирован'",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TelescopeObservations"
+                ],
+                "summary": "Сформировать заявку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID заявки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "description": "Логин пользователя и получение токена авторизации",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Авторизация пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные для входа",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "Password": {
+                                    "type": "string"
+                                },
+                                "Username": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid json",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "invalid credentials",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/logout": {
+            "post": {
+                "description": "Удаляет текущую сессию пользователя и очищает cookie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Выход пользователя",
+                "responses": {
+                    "200": {
+                        "description": "logged out",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Возвращает ID, имя пользователя и флаг модератора для авторизованного пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Получить информацию о текущем пользователе",
+                "responses": {
+                    "200": {
+                        "description": "Информация о пользователе",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения пользователя",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Позволяет обновить имя пользователя или пароль. Флаги модератора и ID недоступны для изменения",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Обновление информации о текущем пользователе",
+                "parameters": [
+                    {
+                        "description": "Поля для обновления пользователя",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user updated",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid json",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка обновления пользователя",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/register": {
+            "post": {
+                "description": "Создает нового пользователя с логином, паролем и флагом модератора",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "IsModerator": {
+                                    "type": "boolean"
+                                },
+                                "Password": {
+                                    "type": "string"
+                                },
+                                "Username": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "user created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid json",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка создания пользователя",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Star": {
+            "type": "object",
+            "properties": {
+                "dec": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "imageURL": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "observations": {
+                    "description": "связь многие-ко-многим через telescope_observation_stars",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TelescopeObservation"
+                    }
+                },
+                "ra": {
+                    "type": "number"
+                },
+                "shortDescription": {
+                    "type": "string"
+                },
+                "starID": {
+                    "type": "integer"
+                },
+                "starName": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TelescopeObservation": {
+            "type": "object",
+            "properties": {
+                "completionDate": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "creatorID": {
+                    "type": "integer"
+                },
+                "formationDate": {
+                    "type": "string"
+                },
+                "moderator": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "moderatorID": {
+                    "type": "integer"
+                },
+                "observationDate": {
+                    "type": "string"
+                },
+                "observerLatitude": {
+                    "type": "number"
+                },
+                "observerLongitude": {
+                    "type": "number"
+                },
+                "stars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Star"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "telescopeObservationID": {
+                    "type": "integer"
+                },
+                "telescopeObservationStars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TelescopeObservationStar"
+                    }
+                }
+            }
+        },
+        "models.TelescopeObservationStar": {
+            "type": "object",
+            "properties": {
+                "orderNumber": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "resultValue": {
+                    "type": "number"
+                },
+                "star": {
+                    "$ref": "#/definitions/models.Star"
+                },
+                "starID": {
+                    "type": "integer"
+                },
+                "telescopeObservation": {
+                    "$ref": "#/definitions/models.TelescopeObservation"
+                },
+                "telescopeObservationID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "isModerator": {
+                    "type": "boolean"
+                },
+                "passwordHash": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "SessionAuth": {
+            "type": "apiKey",
+            "name": "session_token",
+            "in": "cookie"
+        }
+    }
+}

@@ -24,13 +24,13 @@
     </tr>
     {{range .orders}}
     <tr>
-        <td>{{.ObservationID}}</td>
+        <td>{{.TelescopeObservationID}}</td>
         <td>{{.Status}}</td>
         <td>{{.CreatedAt.Format "02.01.2006 15:04"}}</td>
         <td>{{.Creator.Username}}</td>
         <td>
-            <a href="/order/{{.ObservationID}}">Открыть</a>
-            <form method="post" action="/order/{{.ObservationID}}/delete" style="display:inline;">
+            <a href="/telescopeObservation/{{.TelescopeObservationID}}">Открыть</a>
+            <form method="post" action="/telescopeObservation/{{.TelescopeObservationID}}/delete" style="display:inline;">
                 <button type="submit">Удалить</button>
             </form>
         </td>
@@ -39,7 +39,7 @@
 </table>
 
 <h2>Создать новую корзину</h2>
-<form method="post" action="/order">
+<form method="post" action="/telescopeObservation">
     <label>Дата наблюдения:</label>
     <input type="date" name="observation_date" required>
     <br>
