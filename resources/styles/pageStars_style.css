@@ -36,7 +36,7 @@ header {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 20px; /* расстояние между иконкой и заголовком */
+    gap: 20px;
 }
 
 .search-and-cart {
@@ -50,7 +50,6 @@ header {
 
 /* Заголовок */
 .page-title {
-    /*width: 100%;*/
     width: auto;
     margin: 20px 0;
     padding: 10px 15px;
@@ -58,7 +57,7 @@ header {
     border-radius: 10px;
     font-size: 52px;
     font-weight: 600;
-    color: #EFEFEF;
+    color: #edffff;
     text-align: left;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -76,33 +75,33 @@ header {
 
 .search-form-stars input[type="text"] {
     padding: 12px 20px;
-    border: 2px solid #B09898;
+    border: 2px solid #1a4070;
     border-radius: 25px;
-    background: white;
+    background: #edffff;
     font-size: 14px;
     min-width: 250px;
     outline: none;
+    color: #1a4070;
 }
 
 .search-form-stars input[type="text"]:focus {
-    border-color: #8B7B7B;
+    border-color: #1a4070;
 }
 
 .search-form-stars button[type="submit"] {
     padding: 12px 25px;
     border: none;
     border-radius: 25px;
-    background-color: #B09898;
-    color: white;
+    background-color: #1a4070;
+    color: #edffff;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .search-form-stars button[type="submit"]:hover {
-    background-color: #8B7B7B;
+    background-color: #15325a;
 }
-
 
 .main-content {
     display: flex;
@@ -120,7 +119,7 @@ header {
 /* Кнопки слева */
 .home-button-container,
 .cart-button-container {
-    background: white;
+    background: #edffff;
     border-radius: 20%;
     width: 70px;
     height: 70px;
@@ -176,7 +175,7 @@ header {
 /* Карточки */
 .card {
     border-radius: 20px;
-    background-color: #B09898F2;
+    background-color: rgba(26, 64, 112, 0.95); /* #1a4070 */
     padding: 15px;
     display: flex;
     flex-direction: column;
@@ -209,7 +208,7 @@ header {
     transform: translate(-50%, -50%);
     width: 180px;
     height: 180px;
-    background: white;
+    background: #edffff;
     border-radius: 20px;
     z-index: 1;
 }
@@ -228,7 +227,7 @@ header {
     margin-top: 10px;
     font-size: 16px;
     font-weight: bold;
-    color: white;
+    color: #edffff;
     text-align: center;
     min-height: 40px;
 }
@@ -239,7 +238,7 @@ header {
     width: 100%;
     margin-top: 10px;
     margin-bottom: 10px;
-    color: white;
+    color: #edffff;
     text-align: center;
     line-height: 1.4;
     min-height: 60px;
@@ -254,26 +253,26 @@ header {
 .down p {
     font-size: 16px;
     font-weight: 700;
-    color: white;
+    color: #edffff;
 }
 
 /* Кнопка "Подробнее" */
 .card-button {
     padding: 8px 10px;
     border-radius: 10px;
-    border: 1px solid #000000;
+    border: 1px solid #1a4070;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    background: white;
-    color: #000000;
+    background: #edffff;
+    color: #1a4070;
     text-align: center;
     transition: background-color 0.3s, color 0.3s;
 }
 
 .card-button:hover {
-    background-color: #000000;
-    color: white;
+    background-color: #1a4070;
+    color: #edffff;
     text-decoration: none;
 }
 
@@ -282,13 +281,7 @@ header {
     align-items: center;
 }
 
-
 .cart-button-container.disabled {
     opacity: 0.5;
     pointer-events: none;
 }
-
-
-
-
-

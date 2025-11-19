@@ -129,14 +129,43 @@ func getTelescopeObservationByID(c *gin.Context) {
 	var order models.TelescopeObservation
 	if err := db.
 		Preload("TelescopeObservationStars.Star").
-		Preload("Creator").
-		Preload("Moderator").
 		First(&order, "telescope_observation_id = ? AND status <> ?", id, "удалён").Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Заявка не найдена"})
 		return
 	}
 
-	c.JSON(http.StatusOK, order)
+	type StarResponse struct {
+		StarID           int     `json:"starId"`
+		StarName         string  `json:"starName"`
+		ImageURL         string  `json:"imageUrl"`
+		ShortDescription string  `json:"shortDescription"`
+		Description      string  `json:"description"`
+		RA               float64 `json:"ra"`
+		Dec              float64 `json:"dec"`
+		Quantity         int     `json:"quantity"`
+		OrderNumber      int     `json:"orderNumber"`
+	}
+
+	type Response struct {
+		Stars []StarResponse `json:"stars"`
+	}
+
+	var starsResponse []StarResponse
+	for _, observationStar := range order.TelescopeObservationStars {
+		starsResponse = append(starsResponse, StarResponse{
+			StarID:           observationStar.Star.StarID,
+			StarName:         observationStar.Star.StarName,
+			ImageURL:         observationStar.Star.ImageURL,
+			ShortDescription: observationStar.Star.ShortDescription,
+			Description:      observationStar.Star.Description,
+			RA:               observationStar.Star.RA,
+			Dec:              observationStar.Star.Dec,
+			Quantity:         observationStar.Quantity,
+			OrderNumber:      observationStar.OrderNumber,
+		})
+	}
+
+	c.JSON(http.StatusOK, Response{Stars: starsResponse})
 }
 
 // @Summary Обновить поля заявки
