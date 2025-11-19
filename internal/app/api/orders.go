@@ -41,7 +41,7 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Failure 500 {object} map[string]string
-// @Router /telescopeObservation/cart [get]
+// @Router /telescopeObservations/cart [get]
 // @Security BearerAuth
 func getTelescopeObservationInfo(c *gin.Context) {
 	userID := auth.CurrentUserID()
@@ -75,16 +75,23 @@ func getTelescopeObservationInfo(c *gin.Context) {
 // @Param status query string false "Статус заявки"
 // @Success 200 {array} models.TelescopeObservation
 // @Failure 500 {object} map[string]string
-// @Router /telescopeObservation [get]
+// @Router /telescopeObservations [get]
 // @Security BearerAuth
 func getAllTelescopeObservations(c *gin.Context) {
 	var orders []models.TelescopeObservation
+
+	isModAny, _ := c.Get("is_moderator")
+	isModerator := isModAny.(bool)
 
 	from := c.Query("from")
 	to := c.Query("to")
 	status := c.Query("status")
 
 	query := db.Model(&models.TelescopeObservation{})
+
+	if !isModerator {
+		query = query.Where("moderator_id IS NULL")
+	}
 
 	if from != "" && to != "" {
 		query = query.Where("formation_date BETWEEN ? AND ?", from, to)
@@ -116,7 +123,7 @@ func getAllTelescopeObservations(c *gin.Context) {
 // @Success 200 {object} models.TelescopeObservation
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /telescopeObservation/{id} [get]
+// @Router /telescopeObservations/{id} [get]
 // @Security BearerAuth
 func getTelescopeObservationByID(c *gin.Context) {
 	idStr := c.Param("id")
@@ -178,7 +185,7 @@ func getTelescopeObservationByID(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /telescopeObservation/{id} [put]
+// @Router /telescopeObservations/{id} [put]
 // @Security BearerAuth
 func updateTelescopeObservationFields(c *gin.Context) {
 	idStr := c.Param("id")
@@ -216,7 +223,7 @@ func updateTelescopeObservationFields(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /telescopeObservation/{id}/submit [put]
+// @Router /telescopeObservations/{id}/submit [put]
 // @Security BearerAuth
 func submitTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")
@@ -266,7 +273,7 @@ func submitTelescopeObservation(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /telescopeObservation/{id}/complete [put]
+// @Router /telescopeObservations/{id}/complete [put]
 // @Security BearerAuth
 func completeTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")
@@ -349,7 +356,7 @@ func completeTelescopeObservation(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /telescopeObservation/{id} [delete]
+// @Router /telescopeObservations/{id} [delete]
 // @Security BearerAuth
 func deleteTelescopeObservation(c *gin.Context) {
 	idStr := c.Param("id")

@@ -113,7 +113,7 @@ func loginUser(c *gin.Context) {
 
 	// ставим cookie клиенту (для браузерного теста / Swagger)
 	// Path "/", HttpOnly true, Secure false (в локальной разработке)
-	c.SetCookie(cookieName, token, int(sessionTTL.Seconds()), "/", "localhost", false, true)
+	c.SetCookie(cookieName, token, int(sessionTTL.Seconds()), "/", "", false, true)
 
 	// возвращаем токен в теле (для Postman/Authorization header)
 	c.JSON(http.StatusOK, gin.H{"token": token})

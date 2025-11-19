@@ -510,7 +510,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/telescopeObservation": {
+        "/telescopeObservations": {
             "get": {
                 "security": [
                     {
@@ -567,7 +567,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/telescopeObservation/cart": {
+        "/telescopeObservations/cart": {
             "get": {
                 "security": [
                     {
@@ -602,7 +602,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/telescopeObservation/{id}": {
+        "/telescopeObservations/{id}": {
             "get": {
                 "security": [
                     {
@@ -773,7 +773,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/telescopeObservation/{id}/complete": {
+        "/telescopeObservations/{id}/complete": {
             "put": {
                 "security": [
                     {
@@ -843,7 +843,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/telescopeObservation/{id}/submit": {
+        "/telescopeObservations/{id}/submit": {
             "put": {
                 "security": [
                     {

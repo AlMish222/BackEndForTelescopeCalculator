@@ -428,7 +428,7 @@ paths:
       - BearerAuth: []
       tags:
       - TelescopeObservationStars
-  /telescopeObservation:
+  /telescopeObservations:
     get:
       description: Возвращает список всех заявок (с фильтрацией по дате и статусу)
       parameters:
@@ -464,7 +464,7 @@ paths:
       summary: Получить все заявки
       tags:
       - TelescopeObservations
-  /telescopeObservation/{id}:
+  /telescopeObservations/{id}:
     delete:
       description: Доступно только модератору. Помечает заявку как удалённую
       parameters:
@@ -574,7 +574,7 @@ paths:
       summary: Обновить поля заявки
       tags:
       - TelescopeObservations
-  /telescopeObservation/{id}/complete:
+  /telescopeObservations/{id}/complete:
     put:
       consumes:
       - application/json
@@ -620,7 +620,7 @@ paths:
       summary: Завершить или отклонить заявку
       tags:
       - TelescopeObservations
-  /telescopeObservation/{id}/submit:
+  /telescopeObservations/{id}/submit:
     put:
       description: Переводит заявку из состояния 'черновик' в 'сформирован'
       parameters:
@@ -654,7 +654,7 @@ paths:
       summary: Сформировать заявку
       tags:
       - TelescopeObservations
-  /telescopeObservation/cart:
+  /telescopeObservations/cart:
     get:
       description: Возвращает черновик заявки и количество услуг в нём
       produces:
