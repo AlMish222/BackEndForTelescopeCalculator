@@ -11,7 +11,8 @@ import (
 )
 
 var userRepo *repository.Repository
-var sessions = map[string]int{} // token -> userID
+
+//var sessions = map[string]int{} // token -> userID
 
 func InitUserAPI(database *gorm.DB, r *gin.RouterGroup) {
 	db = database
@@ -27,25 +28,8 @@ func registerUserRoutes(r *gin.RouterGroup) {
 		users.POST("/logout", logoutUser)
 		users.GET("/me", getCurrentUser)
 		users.PUT("/me", updateCurrentUser)
-		//users.GET("/me", authMiddleware(), getCurrentUser)
-		//users.PUT("/me", authMiddleware(), updateCurrentUser)
 	}
 }
-
-//func authMiddleware() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		auth := c.GetHeader("Authorization")
-//		if len(auth) > 7 && auth[:7] == "Bearer " {
-//			token := auth[7:]
-//			if uid, ok := sessions[token]; ok {
-//				c.Set("user_id", uid)
-//				c.Next()
-//				return
-//			}
-//		}
-//		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-//	}
-//}
 
 func registerUser(c *gin.Context) {
 	var req struct {
@@ -88,8 +72,6 @@ func loginUser(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
-	//token := uuid.NewString()
-	//sessions[token] = user.UserID
 
 	c.JSON(http.StatusOK, gin.H{"message": "login success (singleton user system)"})
 }
