@@ -26,14 +26,16 @@ func main() {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
 	}
 
+	config.InitMinio()
+
 	h := handler.NewHandler(repo)
+	h.MinioClient = config.MinioClient
 
 	// --- Создаем Gin роутер ---
 	router := gin.Default()
-
 	application := app.NewApp(cfg, router, h)
 
 	// --- Запуск ---
-	log.Println("Сервер запущен на http://127.0.0.1:9000")
+	log.Println("Сервер запущен на http://127.0.0.1:9005")
 	application.RunApp()
 }
