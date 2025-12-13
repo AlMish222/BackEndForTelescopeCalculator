@@ -27,6 +27,7 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 		telescopeObservation.GET("/cart", getTelescopeObservationInfo)
 		telescopeObservation.GET("", getAllTelescopeObservations)
 		telescopeObservation.GET("/:id", getTelescopeObservationByID)
+
 		telescopeObservation.PUT("/:id", updateTelescopeObservationFields)
 		telescopeObservation.PUT("/:id/submit", submitTelescopeObservation)
 
@@ -151,10 +152,14 @@ func getTelescopeObservationByID(c *gin.Context) {
 		Dec              float64 `json:"dec"`
 		Quantity         int     `json:"quantity"`
 		OrderNumber      int     `json:"orderNumber"`
+		ResultValue      float64 `json:"resultValue"`
 	}
 
 	type Response struct {
-		Stars []StarResponse `json:"stars"`
+		Stars             []StarResponse `json:"stars"`
+		ObserverLatitude  float64        `json:"observerLatitude"`
+		ObserverLongitude float64        `json:"observerLongitude"`
+		ObservationDate   *time.Time     `json:"observationDate"`
 	}
 
 	var starsResponse []StarResponse
@@ -169,10 +174,18 @@ func getTelescopeObservationByID(c *gin.Context) {
 			Dec:              observationStar.Star.Dec,
 			Quantity:         observationStar.Quantity,
 			OrderNumber:      observationStar.OrderNumber,
+			ResultValue:      42.5,
 		})
 	}
 
-	c.JSON(http.StatusOK, Response{Stars: starsResponse})
+	response := Response{
+		Stars:             starsResponse,
+		ObserverLatitude:  order.ObserverLatitude,
+		ObserverLongitude: order.ObserverLongitude,
+		ObservationDate:   order.ObservationDate,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Обновить поля заявки

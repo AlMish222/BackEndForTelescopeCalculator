@@ -310,11 +310,13 @@ func addStarToDraftOrder(c *gin.Context) {
 		return
 	}
 
+	resultValue := 42.5
 	relation = models.TelescopeObservationStar{
 		TelescopeObservationID: order.TelescopeObservationID,
 		StarID:                 starID,
 		OrderNumber:            1,
 		Quantity:               1,
+		ResultValue:            &resultValue,
 	}
 
 	if err := db.Create(&relation).Error; err != nil {

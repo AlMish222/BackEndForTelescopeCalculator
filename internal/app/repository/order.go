@@ -75,13 +75,14 @@ func (r *Repository) GetOrCreateDraftTelescopeObservation(userID int) (*models.T
 	err := r.DB.Where("creator_id = ? AND status = ?", userID, "черновик").First(&telescopeObservation).Error
 	if err == gorm.ErrRecordNotFound {
 		now := time.Now()
+		observationDate := now.AddDate(0, 0, 5)
 		telescopeObservation = models.TelescopeObservation{
 			CreatorID:         userID,
 			Status:            "черновик",
 			CreatedAt:         now,
-			ObservationDate:   &now,
-			ObserverLatitude:  0.0,
-			ObserverLongitude: 0.0,
+			ObservationDate:   &observationDate,
+			ObserverLatitude:  55.858196,
+			ObserverLongitude: 37.800544,
 		}
 		if err := r.DB.Create(&telescopeObservation).Error; err != nil {
 			return nil, err
