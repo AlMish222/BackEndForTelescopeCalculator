@@ -46,20 +46,20 @@ func (r *RedisRepository) GetCachedUser(ctx context.Context, userID int) (*model
 	return &user, nil
 }
 
-// SetSession сохраняет session:<token> = userID (строка) с TTL
-func (r *RedisRepository) SetSession(ctx context.Context, token string, userID int, ttl time.Duration) error {
-	key := fmt.Sprintf("session:%s", token)
+// SetUserToken сохраняет session:<token> = userID (строка) с TTL
+func (r *RedisRepository) SetUserToken(ctx context.Context, token string, userID int, ttl time.Duration) error {
+	key := fmt.Sprintf("token:%s", token)
 	val := strconv.Itoa(userID)
 	// лог для отладки
-	fmt.Println("SET REDIS SESSION:", key, "->", val)
+	fmt.Println("SET REDIS TOKEN:", key, "->", val)
 	return r.client.Set(ctx, key, val, ttl).Err()
 }
 
-// GetSession возвращает userID по токену
-func (r *RedisRepository) GetSession(ctx context.Context, token string) (int, error) {
-	key := fmt.Sprintf("session:%s", token)
+// GetUserByToken возвращает userID по токену
+func (r *RedisRepository) GetUserByToken(ctx context.Context, token string) (int, error) {
+	key := fmt.Sprintf("token:%s", token)
 	// лог для отладки
-	fmt.Println("GET REDIS SESSION:", key)
+	fmt.Println("GET REDIS TOKEN:", key)
 	val, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		return 0, err
@@ -71,9 +71,9 @@ func (r *RedisRepository) GetSession(ctx context.Context, token string) (int, er
 	return id, nil
 }
 
-func (r *RedisRepository) DeleteSession(ctx context.Context, token string) error {
-	key := fmt.Sprintf("session:%s", token)
+func (r *RedisRepository) DeleteToken(ctx context.Context, token string) error {
+	key := fmt.Sprintf("token:%s", token)
 	// лог для отладки
-	fmt.Println("DEL REDIS SESSION:", key)
+	fmt.Println("DEL REDIS TOKEN:", key)
 	return r.client.Del(ctx, key).Err()
 }

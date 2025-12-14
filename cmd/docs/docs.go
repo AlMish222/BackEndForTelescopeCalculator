@@ -1294,7 +1294,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "192.168.1.51:9005",
+	Host:             "127.0.0.1:9005",
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Calculator Observations Stars API",

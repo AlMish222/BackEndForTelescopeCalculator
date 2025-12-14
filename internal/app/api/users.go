@@ -16,7 +16,6 @@ import (
 var userRepo *repository.Repository
 
 const sessionTTL = 24 * time.Hour
-const cookieName = "session_id"
 
 func InitUserAPI(repo *repository.Repository, r *gin.RouterGroup) {
 	userRepo = repo
@@ -101,19 +100,15 @@ func loginUser(c *gin.Context) {
 
 	token := uuid.NewString()
 
-	// сохраняем сессию в Redis (session:<token> -> userID)
+	// сохраняем токен в Redis (token:<uuid> -> userID)
 	if userRepo != nil && userRepo.Redis != nil {
-		if err := userRepo.Redis.SetSession(c.Request.Context(), token, user.UserID, sessionTTL); err != nil {
+		if err := userRepo.Redis.SetUserToken(c.Request.Context(), token, user.UserID, sessionTTL); err != nil {
 			// логирование ошибки, но не фатал
 			fmt.Println("ERROR saving session to redis:", err)
 		}
 	} else {
 		fmt.Println("Redis не инициализирован при логине")
 	}
-
-	// ставим cookie клиенту (для браузерного теста / Swagger)
-	// Path "/", HttpOnly true, Secure false (в локальной разработке)
-	c.SetCookie(cookieName, token, int(sessionTTL.Seconds()), "/", "", false, true)
 
 	// возвращаем токен в теле (для Postman/Authorization header)
 	c.JSON(http.StatusOK, gin.H{"token": token})
@@ -130,18 +125,11 @@ func loginUser(c *gin.Context) {
 func logoutUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	// пробуем удалить сессию из cookie (если была)
-	if cookie, err := c.Cookie(cookieName); err == nil && cookie != "" && userRepo != nil && userRepo.Redis != nil {
-		_ = userRepo.Redis.DeleteSession(ctx, cookie)
-		// очистить cookie у клиента
-		c.SetCookie(cookieName, "", -1, "/", "localhost", false, true)
-	}
-
 	// пробуем удалить токен из Authorization header, если прислали
 	auth := c.GetHeader("Authorization")
 	if len(auth) > 7 && auth[:7] == "Bearer " && userRepo != nil && userRepo.Redis != nil {
 		token := auth[7:]
-		_ = userRepo.Redis.DeleteSession(ctx, token)
+		_ = userRepo.Redis.DeleteToken(ctx, token)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
