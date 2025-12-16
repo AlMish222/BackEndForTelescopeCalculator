@@ -34,8 +34,8 @@ import (
 	"log"
 
 	_ "Lab1/cmd/docs"
+	"Lab1/internal/app/middleware"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
@@ -68,18 +68,36 @@ func main() {
 	// --- Создаем Gin роутер ---
 	router := gin.Default()
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:9005", "http://localhost:9005", "http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
+	router.Use(middleware.CORSMiddleware())
+
+	//router.Use(cors.New(cors.Config{
+	//	AllowOrigins: []string{
+	//		"http://localhost:3000",
+	//		"http://127.0.0.1:3000",
+	//		"http://192.168.1.51:3000",
+	//
+	//		// Tauri
+	//		"tauri://localhost",
+	//		"http://tauri.localhost",
+	//
+	//		// GitHub Pages (на всякий случай)
+	//		"https://almish222.github.io",
+	//	},
+	//	AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	//	AllowHeaders: []string{
+	//		"Origin",
+	//		"Content-Type",
+	//		"Accept",
+	//		"Authorization",
+	//	},
+	//	ExposeHeaders:    []string{"Content-Length"},
+	//	AllowCredentials: true,
+	//}))
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	application := app.NewApp(cfg, router, h)
 
 	// --- Запуск ---
-	log.Println("Сервер запущен на http://127.0.0.1:9005")
+	log.Println("Сервер запущен на http://192.168.1.51:9005")
 	application.RunApp()
 }
