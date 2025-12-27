@@ -189,13 +189,14 @@ func (h *Handler) CompleteTelescopeObservation(ctx *gin.Context) {
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/telescopeObservation/%d", telescopeObservation.TelescopeObservationID))
 }
 
+// расчёт индекса сложности наведения
 func (h *Handler) calculateResult(obsStar *models.TelescopeObservationStar, star models.Star) float64 {
 	// Берем широту и долготу из родительской заявки
 	obs := obsStar.TelescopeObservation
 	delta := math.Abs(obs.ObserverLatitude - obs.ObserverLongitude)
 
 	// Пример формулы:
-	// "Результат" = √(RA² + Dec²) * (1 + |широта - долгота| / 180)
+	// "Индекс сложности наведения" = √(RA² + Dec²) * (1 + |широта - долгота| / 180)
 	value := math.Sqrt(math.Pow(star.RA, 2)+math.Pow(star.Dec, 2)) * (1 + delta/180)
 
 	return math.Round(value*100) / 100 // округляем до сотых

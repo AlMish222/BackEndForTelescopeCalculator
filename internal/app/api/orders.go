@@ -5,12 +5,16 @@ import (
 	"Lab1/internal/app/middleware"
 	"Lab1/internal/app/models"
 	"Lab1/internal/app/repository"
-	"math"
+	"bytes"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"gorm.io/gorm"
 )
 
@@ -33,6 +37,11 @@ func registerOrderRoutes(r *gin.RouterGroup) {
 
 		telescopeObservation.PUT("/:id/complete", middleware.RequireModerator(), completeTelescopeObservation)
 		telescopeObservation.DELETE("/:id", middleware.RequireModerator(), deleteTelescopeObservation)
+	}
+
+	accuracyResults := r.Group("/telescopeObservations")
+	{
+		accuracyResults.POST("/:id/accuracy-results", receiveAccuracyResults)
 	}
 }
 
@@ -88,7 +97,8 @@ func getAllTelescopeObservations(c *gin.Context) {
 	to := c.Query("to")
 	status := c.Query("status")
 
-	query := db.Model(&models.TelescopeObservation{})
+	query := db.Model(&models.TelescopeObservation{}).
+		Preload("TelescopeObservationStars")
 
 	if !isModerator {
 		query = query.Where("moderator_id IS NULL")
@@ -113,7 +123,39 @@ func getAllTelescopeObservations(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, orders)
+	// === ДОБАВЛЯЕМ ПОЛЕ completed_stars_count ===
+	type ObservationWithCount struct {
+		models.TelescopeObservation
+		CompletedStarsCount int `json:"completed_stars_count"`
+		TotalStars          int `json:"total_stars"` // ← НОВОЕ ПОЛЕ
+	}
+
+	response := make([]ObservationWithCount, len(orders))
+
+	for i, order := range orders {
+		// Считаем количество звёзд с заполненным result_value
+		var completedCount int64
+		db.Model(&models.TelescopeObservationStar{}).
+			Where("telescope_observation_id = ? AND result_value IS NOT NULL",
+				order.TelescopeObservationID).
+			Count(&completedCount)
+
+		// Общее количество звёзд в заявке
+		totalStars := len(order.TelescopeObservationStars)
+
+		response[i] = ObservationWithCount{
+			TelescopeObservation: order,
+			CompletedStarsCount:  int(completedCount),
+			TotalStars:           totalStars, // ← Добавляем
+		}
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+type ObservationWithCount struct {
+	models.TelescopeObservation
+	CompletedStarsCount int `json:"completed_stars_count"`
 }
 
 // @Summary Получить заявку по ID
@@ -142,28 +184,48 @@ func getTelescopeObservationByID(c *gin.Context) {
 		return
 	}
 
+	// === ДОБАВЛЯЕМ: Подсчёт completed_stars_count ===
+	var completedCount int64
+	err = db.Model(&models.TelescopeObservationStar{}).
+		Where("telescope_observation_id = ? AND result_value IS NOT NULL", id).
+		Count(&completedCount).Error
+
+	if err != nil {
+		// Логируем ошибку, но не прерываем выполнение
+		log.Printf("Error counting completed stars: %v", err)
+		completedCount = 0
+	}
+
 	type StarResponse struct {
-		StarID           int     `json:"starId"`
-		StarName         string  `json:"starName"`
-		ImageURL         string  `json:"imageUrl"`
-		ShortDescription string  `json:"shortDescription"`
-		Description      string  `json:"description"`
-		RA               float64 `json:"ra"`
-		Dec              float64 `json:"dec"`
-		Quantity         int     `json:"quantity"`
-		OrderNumber      int     `json:"orderNumber"`
-		ResultValue      float64 `json:"resultValue"`
+		StarID           int      `json:"starId"`
+		StarName         string   `json:"starName"`
+		ImageURL         string   `json:"imageUrl"`
+		ShortDescription string   `json:"shortDescription"`
+		Description      string   `json:"description"`
+		RA               float64  `json:"ra"`
+		Dec              float64  `json:"dec"`
+		Quantity         int      `json:"quantity"`
+		OrderNumber      int      `json:"orderNumber"`
+		ResultValue      *float64 `json:"resultValue"` // Изменяем на указатель
 	}
 
 	type Response struct {
-		Stars             []StarResponse `json:"stars"`
-		ObserverLatitude  float64        `json:"observerLatitude"`
-		ObserverLongitude float64        `json:"observerLongitude"`
-		ObservationDate   *time.Time     `json:"observationDate"`
+		Stars                  []StarResponse `json:"stars"`
+		ObserverLatitude       float64        `json:"observerLatitude"`
+		ObserverLongitude      float64        `json:"observerLongitude"`
+		ObservationDate        *time.Time     `json:"observationDate"`
+		CompletedStarsCount    int            `json:"completedStarsCount"` // НОВОЕ ПОЛЕ
+		TotalStars             int            `json:"totalStars"`
+		TelescopeObservationID int            `json:"telescopeObservationId"`
+		Status                 string         `json:"status"`
+		CreatedAt              time.Time      `json:"createdAt"`
 	}
 
 	var starsResponse []StarResponse
 	for _, observationStar := range order.TelescopeObservationStars {
+		// Используем реальное значение ResultValue из БД
+		var resultValue *float64
+
 		starsResponse = append(starsResponse, StarResponse{
 			StarID:           observationStar.Star.StarID,
 			StarName:         observationStar.Star.StarName,
@@ -174,15 +236,20 @@ func getTelescopeObservationByID(c *gin.Context) {
 			Dec:              observationStar.Star.Dec,
 			Quantity:         observationStar.Quantity,
 			OrderNumber:      observationStar.OrderNumber,
-			ResultValue:      42.5,
+			ResultValue:      resultValue, // Реальное значение или nil
 		})
 	}
 
 	response := Response{
-		Stars:             starsResponse,
-		ObserverLatitude:  order.ObserverLatitude,
-		ObserverLongitude: order.ObserverLongitude,
-		ObservationDate:   order.ObservationDate,
+		Stars:                  starsResponse,
+		ObserverLatitude:       order.ObserverLatitude,
+		ObserverLongitude:      order.ObserverLongitude,
+		ObservationDate:        order.ObservationDate,
+		CompletedStarsCount:    int(completedCount), // Добавляем счётчик
+		TotalStars:             len(order.TelescopeObservationStars),
+		TelescopeObservationID: order.TelescopeObservationID,
+		Status:                 order.Status,
+		CreatedAt:              order.CreatedAt,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -324,41 +391,147 @@ func completeTelescopeObservation(c *gin.Context) {
 		order.CompletionDate = &now
 
 		if err := repo.UpdateTelescopeObservation(order); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при отклонении: " + err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при отклонения: " + err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Заявка отклонена"})
 		return
 	}
 
-	var stars []models.TelescopeObservationStar
-	if err := db.Preload("Star").
-		Where("telescope_observation_id = ?", id).
-		Find(&stars).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки звёзд заявки: " + err.Error()})
+	// === ЗАПУСК АСИНХРОННОГО РАСЧЁТА ===
+
+	// Просто берём токен из заголовка
+	authHeader := c.GetHeader("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Токен не найден"})
 		return
 	}
 
-	for _, s := range stars {
-		value := math.Sqrt(math.Pow(s.Star.RA, 2) + math.Pow(s.Star.Dec, 2))
-		result := math.Round(value*100) / 100
+	authToken := strings.TrimPrefix(authHeader, "Bearer ")
 
-		if err := repo.UpdateTelescopeObservationStarResult(id, s.StarID, result); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сохранения результата: " + err.Error()})
-			return
+	// Вызываем асинхронный сервис Django
+	asyncSuccess := callAsyncService(id, authToken)
+	if !asyncSuccess {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось запустить асинхронный расчёт"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Запущен асинхронный расчёт точности наблюдения",
+		"status":         "processing",
+		"estimated_time": "5-10 секунд",
+		"observation_id": id,
+		"current_status": "сформирован (расчёт в процессе)",
+		"next_step":      "Результаты будут сохранены автоматически",
+	})
+}
+
+func callAsyncService(observationID int, authToken string) bool {
+	// URL Django сервиса
+	djangoURL := "http://localhost:9010/api/calculate/"
+
+	payload := map[string]interface{}{
+		"observation_id": observationID,
+		"auth_token":     authToken,           // UUID токен пользователя из Redis
+		"async_token":    "async_secret_2024", // Дополнительный токен для Django->Go коммуникации
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("Error marshaling async request: %v", err)
+		return false
+	}
+
+	// Добавляем таймаут
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Post(djangoURL, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("Error calling async service: %v", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	// Логируем для отладки
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Async service error %d: %s", resp.StatusCode, body)
+		return false
+	}
+
+	log.Printf("Async calculation started for observation %d", observationID)
+	return true
+}
+
+func receiveAccuracyResults(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+		return
+	}
+
+	// Проверяем существование заявки
+	order, err := repo.GetTelescopeObservation(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Заявка не найдена"})
+		return
+	}
+
+	var req struct {
+		AuthToken string `json:"auth_token"`
+		Results   []struct {
+			StarID      int     `json:"star_id"`
+			ResultValue float64 `json:"result_value"`
+		} `json:"results"`
+	}
+
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный JSON: " + err.Error()})
+		return
+	}
+
+	// Проверка токена (псевдо-авторизация по ТЗ)
+	const asyncToken = "async_secret_2024"
+	if req.AuthToken != asyncToken {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверный токен асинхронного сервиса"})
+		return
+	}
+
+	// Обновляем result_value для каждой звезды
+	successCount := 0
+	for _, result := range req.Results {
+		err := repo.UpdateTelescopeObservationStarResult(id, result.StarID, result.ResultValue)
+		if err != nil {
+			log.Printf("Error updating star %d result: %v", result.StarID, err)
+			// Продолжаем для остальных звёзд
+			continue
+		}
+		successCount++
+	}
+
+	// Меняем статус заявки на "завершён" если она ещё не завершена
+	if successCount > 0 && order.Status == "сформирован" {
+		moderatorID := 2 // ID системного модератора
+		now := time.Now()
+
+		order.Status = "завершён"
+		order.ModeratorID = &moderatorID
+		order.CompletionDate = &now
+
+		if err := repo.UpdateTelescopeObservation(order); err != nil {
+			log.Printf("Error updating observation status: %v", err)
+		} else {
+			log.Printf("Observation %d status changed to 'завершён'", id)
 		}
 	}
 
-	order.Status = "завершён"
-	order.ModeratorID = &moderatorID
-	order.CompletionDate = &now
-
-	if err := repo.UpdateTelescopeObservation(order); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при завершении заявки: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Заявка завершена успешно"})
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Результаты успешно сохранены",
+		"stars_updated":  successCount,
+		"total_stars":    len(req.Results),
+		"observation_id": id,
+		"new_status":     "завершён",
+	})
 }
 
 // @Summary Удалить заявку
