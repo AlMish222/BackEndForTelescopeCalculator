@@ -284,6 +284,10 @@ func updateTelescopeObservationFields(c *gin.Context) {
 	delete(payload, "telescope_observation_id")
 	delete(payload, "creator_id")
 	delete(payload, "moderator_id")
+	delete(payload, "status")
+	delete(payload, "created_at")
+	delete(payload, "formation_date")
+	delete(payload, "completion_date")
 
 	if err := db.Model(&models.TelescopeObservation{}).
 		Where("telescope_observation_id = ?", id).
@@ -325,6 +329,11 @@ func submitTelescopeObservation(c *gin.Context) {
 	}
 	if order.Status != "черновик" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Можно сформировать только черновик"})
+		return
+	}
+
+	if order.CreatorID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Только создатель может сформировать заявку"})
 		return
 	}
 
@@ -382,12 +391,16 @@ func completeTelescopeObservation(c *gin.Context) {
 		return
 	}
 
-	moderatorID := 2
+	if order.CreatorID == userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Создатель не может выступать модератором для своей заявки"})
+		return
+	}
+
 	now := time.Now()
 
 	if req.Action == "reject" {
 		order.Status = "отклонён"
-		order.ModeratorID = &moderatorID
+		order.ModeratorID = &userID
 		order.CompletionDate = &now
 
 		if err := repo.UpdateTelescopeObservation(order); err != nil {

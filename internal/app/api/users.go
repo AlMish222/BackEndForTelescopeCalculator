@@ -146,12 +146,14 @@ func logoutUser(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Ошибка получения пользователя"
 // @Router /users/me [get]
 func getCurrentUser(c *gin.Context) {
-	uid := c.GetInt("user_id")
+	uid := auth.CurrentUserID()
+
 	user, err := userRepo.GetUserByID(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"user_id":      user.UserID,
 		"username":     user.Username,
@@ -172,7 +174,7 @@ func getCurrentUser(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Ошибка обновления пользователя"
 // @Router /users/me [put]
 func updateCurrentUser(c *gin.Context) {
-	uid := c.GetInt("user_id")
+	uid := auth.CurrentUserID()
 	var req map[string]interface{}
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
@@ -181,7 +183,7 @@ func updateCurrentUser(c *gin.Context) {
 
 	delete(req, "user_id")
 	delete(req, "is_moderator")
-	delete(req, "password_hash")
+	//delete(req, "password_hash")
 
 	if pw, ok := req["password"]; ok {
 		hash, _ := repository.HashPassword(pw.(string))
