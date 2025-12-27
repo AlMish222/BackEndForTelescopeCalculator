@@ -1,0 +1,848 @@
+basePath: /api
+definitions:
+  models.Star:
+    properties:
+      dec:
+        type: number
+      description:
+        type: string
+      imageURL:
+        type: string
+      isActive:
+        type: boolean
+      observations:
+        description: связь многие-ко-многим через telescope_observation_stars
+        items:
+          $ref: '#/definitions/models.TelescopeObservation'
+        type: array
+      ra:
+        type: number
+      shortDescription:
+        type: string
+      starID:
+        type: integer
+      starName:
+        type: string
+    type: object
+  models.TelescopeObservation:
+    properties:
+      completionDate:
+        type: string
+      createdAt:
+        type: string
+      creator:
+        $ref: '#/definitions/models.User'
+      creatorID:
+        type: integer
+      formationDate:
+        type: string
+      moderator:
+        $ref: '#/definitions/models.User'
+      moderatorID:
+        type: integer
+      observationDate:
+        type: string
+      observerLatitude:
+        type: number
+      observerLongitude:
+        type: number
+      stars:
+        items:
+          $ref: '#/definitions/models.Star'
+        type: array
+      status:
+        type: string
+      telescopeObservationID:
+        type: integer
+      telescopeObservationStars:
+        items:
+          $ref: '#/definitions/models.TelescopeObservationStar'
+        type: array
+    type: object
+  models.TelescopeObservationStar:
+    properties:
+      orderNumber:
+        type: integer
+      quantity:
+        type: integer
+      resultValue:
+        type: number
+      star:
+        $ref: '#/definitions/models.Star'
+      starID:
+        type: integer
+      telescopeObservation:
+        $ref: '#/definitions/models.TelescopeObservation'
+      telescopeObservationID:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      isModerator:
+        type: boolean
+      passwordHash:
+        type: string
+      userID:
+        type: integer
+      username:
+        type: string
+    type: object
+host: 127.0.0.1:9005
+info:
+  contact: {}
+  description: "Система позволяет пользователям создавать заявки на получение данных
+    для расчёта наведения телескопа,\nа модераторам — управлять этими заявками и добавлять
+    новые звёзды.\n## \U0001F510 Аутентификация\n- Используются **сессии и cookie**,
+    хранящиеся в **Redis**.\n- Без авторизации доступны только методы **чтения (GET)**.\n-
+    Для авторизованных запросов браузер автоматически отправляет cookie.\n## \U0001F465
+    Роли и права доступа\n- **Гость:** только GET-запросы.\n- **Пользователь:** управление
+    своими заявками + чтение данных.\n- **Модератор:** полный доступ ко всем ресурсам."
+  title: Calculator Observations Stars API
+  version: "1.0"
+paths:
+  /stars:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список звёзд, доступных для наблюдения. Можно указать
+        фильтр по названию.
+      parameters:
+      - description: Фильтр по названию звезды
+        in: query
+        name: star_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Star'
+            type: array
+        "500":
+          description: Ошибка получения звёзд
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список звёзд
+      tags:
+      - Stars
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую запись звезды в базе данных
+      parameters:
+      - description: Данные звезды
+        in: body
+        name: star
+        required: true
+        schema:
+          $ref: '#/definitions/models.Star'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Звезда успешно добавлена
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Некорректный JSON или отсутствует название
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при сохранении
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Добавить новую звезду
+      tags:
+      - Stars
+  /stars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет звезду по ID
+      parameters:
+      - description: ID звезды
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Звезда успешно удалена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Звезда не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при удалении
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить звезду
+      tags:
+      - Stars
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о конкретной звезде по её ID
+      parameters:
+      - description: ID звезды
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Star'
+        "404":
+          description: Звезда не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить звезду по ID
+      tags:
+      - Stars
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о звезде по ID
+      parameters:
+      - description: ID звезды
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновлённые данные звезды
+        in: body
+        name: star
+        required: true
+        schema:
+          $ref: '#/definitions/models.Star'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Звезда успешно обновлена
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Некорректный запрос
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Звезда не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при обновлении
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить данные звезды
+      tags:
+      - Stars
+  /stars/{id}/add:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет звезду в текущую заявку пользователя (черновик). Если
+        уже есть — увеличивает количество.
+      parameters:
+      - description: ID звезды
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Звезда успешно добавлена или количество увеличено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при работе с заявкой
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Добавить звезду в черновик заявки
+      tags:
+      - Stars
+  /stars/{id}/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает изображение звезды в MinIO и сохраняет путь в БД
+      parameters:
+      - description: ID звезды
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Файл изображения
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Изображение успешно загружено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный ID или файл
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при загрузке или сохранении
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Загрузить изображение звезды
+      tags:
+      - Stars
+  /telescope-observation-stars:
+    delete:
+      description: Удаляет связь звезды с наблюдением (услугу)
+      parameters:
+      - description: ID заявки
+        in: query
+        name: telescope_observation_id
+        required: true
+        type: integer
+      - description: ID звезды
+        in: query
+        name: star_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить услугу из заявки
+      tags:
+      - TelescopeObservationStars
+    put:
+      consumes:
+      - application/json
+      description: Обновляет поля услуги в заявке (order_number, quantity, result_value)
+      parameters:
+      - description: Поля для обновления
+        in: body
+        name: input
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - TelescopeObservationStars
+  /telescopeObservations:
+    get:
+      description: Возвращает список всех заявок (с фильтрацией по дате и статусу)
+      parameters:
+      - description: Дата начала (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Дата конца (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      - description: Статус заявки
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TelescopeObservation'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить все заявки
+      tags:
+      - TelescopeObservations
+  /telescopeObservations/{id}:
+    delete:
+      description: Доступно только модератору. Помечает заявку как удалённую
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить заявку
+      tags:
+      - TelescopeObservations
+    get:
+      description: Возвращает данные конкретной заявки со связанными звёздами и пользователями
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TelescopeObservation'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить заявку по ID
+      tags:
+      - TelescopeObservations
+    put:
+      consumes:
+      - application/json
+      description: Обновляет произвольные поля заявки (кроме ID и связей)
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: input
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить поля заявки
+      tags:
+      - TelescopeObservations
+  /telescopeObservations/{id}/complete:
+    put:
+      consumes:
+      - application/json
+      description: Доступно только модератору. Завершает или отклоняет сформированную
+        заявку
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Действие (action=reject или complete)
+        in: body
+        name: input
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Завершить или отклонить заявку
+      tags:
+      - TelescopeObservations
+  /telescopeObservations/{id}/submit:
+    put:
+      description: Переводит заявку из состояния 'черновик' в 'сформирован'
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Сформировать заявку
+      tags:
+      - TelescopeObservations
+  /telescopeObservations/cart:
+    get:
+      description: Возвращает черновик заявки и количество услуг в нём
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить информацию о корзине пользователя
+      tags:
+      - TelescopeObservations
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Логин пользователя и получение токена авторизации
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: credentials
+        required: true
+        schema:
+          properties:
+            Password:
+              type: string
+            Username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid json
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: invalid credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Авторизация пользователя
+      tags:
+      - Users
+  /users/logout:
+    post:
+      consumes:
+      - application/json
+      description: Удаляет текущую сессию пользователя и очищает cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: logged out
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Выход пользователя
+      tags:
+      - Users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает ID, имя пользователя и флаг модератора для авторизованного
+        пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о пользователе
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка получения пользователя
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить информацию о текущем пользователе
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Позволяет обновить имя пользователя или пароль. Флаги модератора
+        и ID недоступны для изменения
+      parameters:
+      - description: Поля для обновления пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid json
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления пользователя
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновление информации о текущем пользователе
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя с логином, паролем и флагом модератора
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          properties:
+            IsModerator:
+              type: boolean
+            Password:
+              type: string
+            Username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: user created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid json
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка создания пользователя
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - Users
+securityDefinitions:
+  SessionAuth:
+    in: cookie
+    name: session_token
+    type: apiKey
+swagger: "2.0"

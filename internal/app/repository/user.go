@@ -2,6 +2,7 @@ package repository
 
 import (
 	"Lab1/internal/app/models"
+	"context"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,9 +18,29 @@ func (r *Repository) GetUserByUsername(username string) (*models.User, error) {
 }
 
 func (r *Repository) GetUserByID(id int) (*models.User, error) {
+	ctx := context.Background()
+
+	// 1. Пробуем получить из Redis
+	if r.Redis != nil {
+		user, err := r.Redis.GetCachedUser(ctx, id)
+		if err == nil {
+			return user, nil
+		}
+	}
+
+	// 2. Если в Redis нет — достаём из БД
 	var user models.User
 	err := r.DB.First(&user, id).Error
-	return &user, err
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Кладём в Redis
+	if r.Redis != nil {
+		_ = r.Redis.CacheUser(ctx, &user)
+	}
+
+	return &user, nil
 }
 
 func HashPassword(password string) (string, error) {

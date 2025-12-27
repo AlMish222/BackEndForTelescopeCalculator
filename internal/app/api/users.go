@@ -1,22 +1,24 @@
 package api
 
 import (
-	"Lab1/internal/app/auth"
+	"Lab1/internal/app/middleware"
 	"Lab1/internal/app/models"
 	"Lab1/internal/app/repository"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/google/uuid"
+	_ "github.com/sirupsen/logrus"
 )
 
 var userRepo *repository.Repository
 
-//var sessions = map[string]int{} // token -> userID
+const sessionTTL = 24 * time.Hour
 
-func InitUserAPI(database *gorm.DB, r *gin.RouterGroup) {
-	db = database
-	userRepo = repository.NewRepositoryFromDB(db)
+func InitUserAPI(repo *repository.Repository, r *gin.RouterGroup) {
+	userRepo = repo
 	registerUserRoutes(r)
 }
 
@@ -26,11 +28,22 @@ func registerUserRoutes(r *gin.RouterGroup) {
 		users.POST("/register", registerUser)
 		users.POST("/login", loginUser)
 		users.POST("/logout", logoutUser)
-		users.GET("/me", getCurrentUser)
-		users.PUT("/me", updateCurrentUser)
+		users.GET("/me", middleware.AuthMiddleware(), getCurrentUser)
+		users.PUT("/me", middleware.AuthMiddleware(), updateCurrentUser)
 	}
 }
 
+// registerUser godoc
+// @Summary Регистрация пользователя
+// @Description Создает нового пользователя с логином, паролем и флагом модератора
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body object{Username=string,Password=string,IsModerator=bool} true "Данные пользователя"
+// @Success 201 {object} map[string]string "user created"
+// @Failure 400 {object} map[string]string "invalid json"
+// @Failure 500 {object} map[string]string "Ошибка создания пользователя"
+// @Router /users/register [post]
 func registerUser(c *gin.Context) {
 	var req struct {
 		Username    string `json:"Username"`
@@ -57,11 +70,23 @@ func registerUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "user created"})
 }
 
+// loginUser godoc
+// @Summary Авторизация пользователя
+// @Description Логин пользователя и получение токена авторизации
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param credentials body object{Username=string,Password=string} true "Данные для входа"
+// @Success 200 {object} map[string]string "token"
+// @Failure 400 {object} map[string]string "invalid json"
+// @Failure 401 {object} map[string]string "invalid credentials"
+// @Router /users/login [post]
 func loginUser(c *gin.Context) {
 	var req struct {
 		Username string `json:"Username"`
 		Password string `json:"Password"`
 	}
+
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
 		return
@@ -73,20 +98,53 @@ func loginUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "login success (singleton user system)"})
+	token := uuid.NewString()
+
+	// сохраняем токен в Redis (token:<uuid> -> userID)
+	if userRepo != nil && userRepo.Redis != nil {
+		if err := userRepo.Redis.SetUserToken(c.Request.Context(), token, user.UserID, sessionTTL); err != nil {
+			// логирование ошибки, но не фатал
+			fmt.Println("ERROR saving session to redis:", err)
+		}
+	} else {
+		fmt.Println("Redis не инициализирован при логине")
+	}
+
+	// возвращаем токен в теле (для Postman/Authorization header)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
+// logoutUser godoc
+// @Summary Выход пользователя
+// @Description Удаляет текущую сессию пользователя и очищает cookie
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string "logged out"
+// @Router /users/logout [post]
 func logoutUser(c *gin.Context) {
-	//auth := c.GetHeader("Authorization")
-	//if len(auth) > 7 && auth[:7] == "Bearer " {
-	//	token := auth[7:]
-	//	delete(sessions, token)
-	//}
-	//c.JSON(http.StatusOK, gin.H{"message": "logged out"})
-	c.JSON(http.StatusOK, gin.H{"message": "logout success (no session used)"})
+	ctx := c.Request.Context()
 
+	// пробуем удалить токен из Authorization header, если прислали
+	auth := c.GetHeader("Authorization")
+	if len(auth) > 7 && auth[:7] == "Bearer " && userRepo != nil && userRepo.Redis != nil {
+		token := auth[7:]
+		_ = userRepo.Redis.DeleteToken(ctx, token)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
 }
 
+// getCurrentUser godoc
+// @Summary Получить информацию о текущем пользователе
+// @Description Возвращает ID, имя пользователя и флаг модератора для авторизованного пользователя
+// @Tags Users
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Информация о пользователе"
+// @Failure 500 {object} map[string]string "Ошибка получения пользователя"
+// @Router /users/me [get]
 func getCurrentUser(c *gin.Context) {
 	uid := auth.CurrentUserID()
 
@@ -103,6 +161,18 @@ func getCurrentUser(c *gin.Context) {
 	})
 }
 
+// updateCurrentUser godoc
+// @Summary Обновление информации о текущем пользователе
+// @Description Позволяет обновить имя пользователя или пароль. Флаги модератора и ID недоступны для изменения
+// @Tags Users
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param user body object true "Поля для обновления пользователя"
+// @Success 200 {object} map[string]string "user updated"
+// @Failure 400 {object} map[string]string "invalid json"
+// @Failure 500 {object} map[string]string "Ошибка обновления пользователя"
+// @Router /users/me [put]
 func updateCurrentUser(c *gin.Context) {
 	uid := auth.CurrentUserID()
 	var req map[string]interface{}

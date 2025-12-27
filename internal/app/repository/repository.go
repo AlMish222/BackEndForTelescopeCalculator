@@ -9,15 +9,16 @@ import (
 )
 
 type Repository struct {
-	DB *gorm.DB
+	DB    *gorm.DB
+	Redis *RedisRepository
 }
 
-func NewRepository(dsn string) (*Repository, error) {
+func NewRepository(dsn string, redisClient *RedisRepository) (*Repository, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return &Repository{DB: db}, nil
+	return &Repository{DB: db, Redis: redisClient}, nil
 }
 
 func NewRepositoryFromDB(db *gorm.DB) *Repository {

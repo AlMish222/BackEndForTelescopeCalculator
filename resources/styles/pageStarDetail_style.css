@@ -1,19 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
 
-/*header {*/
-/*    position: fixed;*/
-/*    top: 0;*/
-/*    left: 0;*/
-/*    width: 100%;*/
-/*    z-index: 1000;*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    align-items: flex-start;*/
-/*    padding: 10px 0;*/
-/*    background: rgba(0,0,0,0.5);*/
-/*    flex-direction: column;*/
-/*}*/
-
 header {
     position: fixed;
     top: 0;
@@ -30,7 +16,7 @@ header {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 20px; /* расстояние между иконкой и заголовком */
+    gap: 20px;
 }
 
 .header-buttons {
@@ -40,14 +26,14 @@ header {
 }
 
 .home-button-container {
-    background: white;
+    background: #edffff; /* Вторичный цвет */
     border-radius: 20%;
     width: 60px;
     height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Тень для объема */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -63,7 +49,7 @@ header img {
 }
 
 h1 {
-    color: #333;
+    color: #1a4070; /* Основной синий */
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 15px;
@@ -71,7 +57,7 @@ h1 {
 }
 
 h2 {
-    color: #333;
+    color: #1a4070; /* Основной синий */
     font-size: 20px;
     text-align: left;
     margin-bottom: 15px;
@@ -93,7 +79,7 @@ body {
     max-width: 800px;
     margin: 50px auto;
     padding: 30px;
-    background: rgba(255, 255, 255, 0.9);
+    background: #edffff; /* Вторичный цвет */
     border-radius: 15px;
     backdrop-filter: blur(5px);
 }
@@ -105,11 +91,12 @@ body {
     object-fit: cover;
     margin: 20px 0;
     display: block;
+    border: 3px solid #1a4070; /* Основной синий */
 }
 
 .description {
     font-size: 16px;
-    color: #888;
+    color: #1a4070; /* Основной синий */
     margin: 15px 0;
     line-height: 1.5;
     text-align: left;
@@ -125,28 +112,30 @@ body {
 .add-to-cart-button {
     display: inline-block;
     padding: 10px 20px;
-    color: white;
+    color: #edffff; /* Вторичный цвет */
     text-decoration: none;
     border-radius: 25px;
     font-weight: 500;
     transition: background-color 0.3s;
     font-family: 'Noto Serif', serif;
+    border: none;
+    cursor: pointer;
 }
 
 .back-button {
-    background-color: #B09898;
+    background-color: #1a4070; /* Основной синий */
 }
 
 .back-button:hover {
-    background-color: #8B7B7B;
+    background-color: #15325a; /* Темнее основной синий */
 }
 
 .add-to-cart-button {
-    background-color: #4507FF;
+    background-color: #1a4070; /* Основной синий */
 }
 
 .add-to-cart-button:hover {
-    background-color: #0056b3;
+    background-color: #15325a; /* Темнее основной синий */
 }
 
 .page-title {
@@ -156,7 +145,7 @@ body {
     border-radius: 10px;
     font-size: 36px;
     font-weight: 600;
-    color: #EFEFEF;
+    color: #edffff; /* Вторичный цвет */
     text-align: left;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -172,7 +161,7 @@ body {
     display: block;
     width: 45px;
     height: 45px;
-    position: relative; /* теперь кружок будет привязан к картинке */
+    position: relative;
 }
 
 .cart-count{
@@ -204,11 +193,10 @@ body {
 .coordinate-block {
     padding: 12px 20px;
     border-radius: 10px;
-    border: 2px solid #B09898;
-    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #1a4070; /* Основной синий */
+    background: #edffff; /* Вторичный цвет */
     font-family: 'Noto Serif', serif;
     font-size: 14px;
-    color: #333;
+    color: #1a4070; /* Основной синий */
     min-width: 200px;
 }
-

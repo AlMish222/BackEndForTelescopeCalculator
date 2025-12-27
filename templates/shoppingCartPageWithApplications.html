@@ -12,12 +12,12 @@
     <div class="page-title">Список звёзд для расчёта</div>
 </header>
 
-<div class="cart-container" id="cart-{{ .order.TelescopeObservationID }}">
+<div class="cart-container" id="cart-{{ .telescopeObservation.TelescopeObservationID }}">
     <h1>Ваша корзина</h1>
 
-    {{ if .order.TelescopeObservationStars }}
+    {{ if .telescopeObservation.TelescopeObservationStars }}
     <div class="cart-items">
-        {{ range .order.TelescopeObservationStars }}
+        {{ range .telescopeObservation.TelescopeObservationStars }}
         <div class="cart-item">
             <div class="item-image-container">
                 <div class="item-image-background"></div>
@@ -30,19 +30,17 @@
 
                 {{ if gt .Quantity 0 }}
                 <div class="quantity-controls">
-                    <button class="decrease-button">-</button>
                     <span class="item-count">{{ .Quantity }}</span>
-                    <button class="increase-button">+</button>
                 </div>
                 {{ end }}
 
                 <div class="observation-container">
-                    <span class="observer-coord">Широта: {{ .TelescopeObservation.ObserverLatitude }}</span>
-                    <span class="observer-coord">Долгота: {{ .TelescopeObservation.ObserverLongitude }}</span>
+                    <span class="observer-coord">Широта: {{ $.telescopeObservation.ObserverLatitude }}</span>
+                    <span class="observer-coord">Долгота: {{ $.telescopeObservation.ObserverLongitude }}</span>
                     <span class="observation-date">
                         Дата наблюдения:
-                        {{ if .TelescopeObservation.ObservationDate }}
-                            {{ .TelescopeObservation.ObservationDate }}
+                        {{ if $.telescopeObservation.ObservationDate }}
+                            {{ $.telescopeObservation.ObservationDate.Format "02-01-2006" }}
                         {{ else }}
                             &nbsp;&nbsp;&nbsp;
                         {{ end }}
@@ -53,6 +51,12 @@
             <div class="star-coord-container">
                 <span class="star-coord">RA: {{ .Star.RA }}</span>
                 <span class="star-coord">Dec: {{ .Star.Dec }}</span>
+                <span class="star-coord">Результат:
+                    {{ if .ResultValue }}
+                        {{ .ResultValue }}
+                    {{ end }}
+
+                </span>
             </div>
         </div>
         {{ end }}
@@ -66,7 +70,7 @@
 </div>
 
 <div class="cart-footer-left">
-    <form method="post" action="/order/{{ .order.TelescopeObservationID }}/delete" style="display:inline;">
+    <form method="post" action="/telescopeObservation/{{ .telescopeObservation.TelescopeObservationID }}/delete" style="display:inline;">
         <button type="submit" class="footer-button delete-order"
                 onclick="return confirm('Вы уверены, что хотите удалить эту корзину?');">
             Удалить корзину

@@ -8,11 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
 	Repository  *repository.Repository
 	MinioClient *minio.Client
+	RedisClient *redis.Client
 }
 
 func NewHandler(r *repository.Repository) *Handler {
@@ -20,19 +22,19 @@ func NewHandler(r *repository.Repository) *Handler {
 }
 
 func (h *Handler) RegisterHandler(rou *gin.Engine) {
-	rou.GET("/", h.GetOrders)
+	rou.GET("/", h.GetTelescopeObservations)
 	rou.GET("/stars", h.GetStars)
 	rou.GET("/stars/:id", h.GetStarByID)
-	rou.POST("/order/:id/delete", h.DeleteOrder)
+	rou.POST("/telescopeObservation/:id/delete", h.DeleteTelescopeObservation)
 
-	rou.GET("/order/:id", h.GetOrder)
-	rou.POST("/order", h.CreateOrder)
+	rou.GET("/telescopeObservation/:id", h.GetTelescopeObservation)
+	rou.POST("/telescopeObservation", h.CreateTelescopeObservation)
 
-	rou.POST("/order/:id/update", h.UpdateOrder)
+	rou.POST("/telescopeObservation/:id/update", h.UpdateTelescopeObservation)
 
 	rou.POST("/star/:id/add", h.AddStarToDraftOrder)
 
-	api.RegisterRoutes(rou, h.Repository.DB)
+	api.RegisterRoutes(rou, h.Repository)
 }
 
 func (h *Handler) RegisterStatic(rou *gin.Engine) {

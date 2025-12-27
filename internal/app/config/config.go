@@ -11,6 +11,10 @@ import (
 type Config struct {
 	ServiceHost string
 	ServicePort int
+
+	RedisHost string
+	RedisPort int
+	RedisDB   int
 }
 
 func NewConfig() (*Config, error) {

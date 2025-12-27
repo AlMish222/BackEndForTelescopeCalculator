@@ -24,7 +24,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	}
 
 	// Получаем или создаём черновик (корзину)
-	order, err := h.Repository.GetOrCreateDraftOrder(userID)
+	telescopeObservation, err := h.Repository.GetOrCreateDraftTelescopeObservation(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения или создания черновика: ", err)
 		ctx.String(http.StatusInternalServerError, "Ошибка работы с черновиком")
@@ -34,7 +34,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	// Проверяем, не добавлена ли звезда уже
 	var existing models.TelescopeObservationStar
 	err = h.Repository.DB.
-		Where("telescope_observation_id = ? AND star_id = ?", order.TelescopeObservationID, starID).
+		Where("telescope_observation_id = ? AND star_id = ?", telescopeObservation.TelescopeObservationID, starID).
 		First(&existing).Error
 
 	if err == nil {
@@ -48,7 +48,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 
 		var cartCount int64
 		if countErr := h.Repository.DB.Model(&models.TelescopeObservationStar{}).
-			Where("telescope_observation_id = ?", order.TelescopeObservationID).
+			Where("telescope_observation_id = ?", telescopeObservation.TelescopeObservationID).
 			Count(&cartCount).Error; countErr != nil {
 			logrus.Error("Ошибка пересчёта корзины: ", countErr)
 		}
@@ -60,7 +60,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 	// Добавляем новую связь
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		relation := models.TelescopeObservationStar{
-			TelescopeObservationID: order.TelescopeObservationID,
+			TelescopeObservationID: telescopeObservation.TelescopeObservationID,
 			StarID:                 starID,
 			OrderNumber:            1,
 			Quantity:               1,
@@ -74,7 +74,7 @@ func (h *Handler) AddStarToDraftOrder(ctx *gin.Context) {
 
 		var cartCount int64
 		if countErr := h.Repository.DB.Model(&models.TelescopeObservationStar{}).
-			Where("telescope_observation_id = ?", order.TelescopeObservationID).
+			Where("telescope_observation_id = ?", telescopeObservation.TelescopeObservationID).
 			Count(&cartCount).Error; countErr != nil {
 			logrus.Error("Ошибка пересчёта корзины: ", countErr)
 		}
@@ -108,7 +108,7 @@ func (h *Handler) GetStars(ctx *gin.Context) {
 		return
 	}
 
-	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
+	hasDraft, draftID, cartCount, err := h.Repository.GetTelescopeObservationInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)
 	}
@@ -143,7 +143,7 @@ func (h *Handler) GetStarByID(ctx *gin.Context) {
 
 	// Получаем данные корзины (черновик + количество элементов)
 	userID := auth.CurrentUserID()
-	hasDraft, draftID, cartCount, err := h.Repository.GetCartInfo(userID)
+	hasDraft, draftID, cartCount, err := h.Repository.GetTelescopeObservationInfo(userID)
 	if err != nil {
 		logrus.Error("Ошибка получения информации о корзине: ", err)
 	}
