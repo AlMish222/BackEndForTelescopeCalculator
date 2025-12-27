@@ -6,28 +6,13 @@
 </head>
 <body>
     <header>
-        <div class="page-title">Информация о звезде</div>
-
         <div class="header-buttons">
             <div class="home-button-container">
-                <a href="/stars"><img src="http://127.0.0.1:9000/test/home.png" alt="home"></a>
+                <a href="/stars">
+                    <img src="http://127.0.0.1:9000/test/home.png" alt="home">
+                </a>
             </div>
-
-            <div class="cart-wrapper">
-                {{ if .hasDraft }}
-                    <a href="/order/{{ .draftID }}" class="cart-button-link">
-                        <div class="cart-button-container">
-                            <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
-                            <span class="cart-count">{{ .cartCount }}</span>
-                        </div>
-                    </a>
-                {{ else }}
-                    <div class="cart-button-container disabled" title="У вас нет активного черновика">
-                        <img src="http://127.0.0.1:9000/test/basket.png" alt="cart">
-                        <span class="cart-count">{{ .cartCount }}</span>
-                    </div>
-                {{ end }}
-            </div>
+            <div class="page-title">Информация о звезде</div>
         </div>
     </header>
 
